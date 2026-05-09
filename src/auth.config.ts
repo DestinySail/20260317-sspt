@@ -4,6 +4,9 @@ import { getAuthProviders } from "@/lib/auth-providers";
 
 const authConfig = {
   providers: getAuthProviders(),
+  pages: {
+    error: "/auth/error",
+  },
   callbacks: {
     async jwt({ token, user }) {
       const email = user?.email ?? token.email;
