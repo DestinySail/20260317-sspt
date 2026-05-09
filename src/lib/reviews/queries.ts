@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { Prisma } from "@prisma/client";
 import { getEventPhase, type EventPhase } from "@/lib/events/phase";
 import {
@@ -194,7 +195,7 @@ export async function listJudgeAssignedEvents(userId: string) {
   }
 }
 
-export async function hasJudgeAssignments(userId: string) {
+export const hasJudgeAssignments = cache(async function hasJudgeAssignments(userId: string) {
   const prisma = getOptionalPrismaClient();
 
   if (!prisma) {
@@ -210,7 +211,7 @@ export async function hasJudgeAssignments(userId: string) {
   } catch {
     return false;
   }
-}
+});
 
 export async function getJudgeEventReviewData(eventId: string, userId: string) {
   const prisma = getOptionalPrismaClient();

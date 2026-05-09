@@ -103,6 +103,7 @@ export default async function JudgeEventReviewPage({
                         </Badge>
                         <Link
                           href={`/judge/events/${id}?projectId=${project.id}`}
+                          prefetch={false}
                           className={linkButtonClassName("outline", "sm")}
                         >
                           {isActive ? "当前作品" : "去评分"}

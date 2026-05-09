@@ -112,6 +112,8 @@ model Event {
   projects      Project[]
   projectScores ProjectScore[]
   judges        EventJudge[]
+
+  @@index([published, startDate, createdAt])
 }
 
 model Registration {
@@ -127,6 +129,8 @@ model Registration {
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, userId])
+  @@index([userId, createdAt])
+  @@index([eventId, status, createdAt])
 }
 
 model Project {
@@ -150,6 +154,8 @@ model Project {
   scores ProjectScore[]
 
   @@unique([eventId, submittedBy])
+  @@index([submittedBy, updatedAt, createdAt])
+  @@index([eventId, status, updatedAt, createdAt])
 }
 
 model ProjectScore {
@@ -166,6 +172,7 @@ model ProjectScore {
   event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, judgeId])
+  @@index([eventId, judgeId])
 }
 
 model EventJudge {
@@ -178,4 +185,5 @@ model EventJudge {
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, userId])
+  @@index([userId])
 }

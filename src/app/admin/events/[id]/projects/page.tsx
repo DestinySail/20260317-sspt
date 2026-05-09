@@ -61,13 +61,13 @@ export default async function AdminEventProjectsPage({
         }
         actions={
           <>
-            <Link href={exportHref} className={linkButtonClassName("outline", "sm")}>
+            <Link href={exportHref} prefetch={false} className={linkButtonClassName("outline", "sm")}>
               导出 CSV
             </Link>
-            <Link href={`/admin/events/${id}/registrations`} className={linkButtonClassName("outline", "sm")}>
+            <Link href={`/admin/events/${id}/registrations`} prefetch={false} className={linkButtonClassName("outline", "sm")}>
               报名管理
             </Link>
-            <Link href="/admin/events" className={linkButtonClassName("outline", "sm")}>
+            <Link href="/admin/events" prefetch={false} className={linkButtonClassName("outline", "sm")}>
               返回赛事列表
             </Link>
           </>
@@ -90,7 +90,7 @@ export default async function AdminEventProjectsPage({
             </div>
             <div className="flex flex-wrap gap-3">
               <ProjectStatusBadge status={selectedProject.status} />
-              <Link href={buildProjectDetailHref(id, filters)} className={linkButtonClassName("outline", "sm")}>
+              <Link href={buildProjectDetailHref(id, filters)} prefetch={false} className={linkButtonClassName("outline", "sm")}>
                 收起详情
               </Link>
             </div>
@@ -196,7 +196,7 @@ export default async function AdminEventProjectsPage({
             </Button>
           </div>
           <div className="flex items-end">
-            <Link href={`/admin/events/${id}/projects`} className={linkButtonClassName("outline", "sm")}>
+            <Link href={`/admin/events/${id}/projects`} prefetch={false} className={linkButtonClassName("outline", "sm")}>
               重置
             </Link>
           </div>
@@ -248,6 +248,7 @@ export default async function AdminEventProjectsPage({
                     <div className="flex flex-wrap justify-end gap-2">
                       <Link
                         href={buildProjectDetailHref(id, filters, project.id)}
+                        prefetch={false}
                         className={linkButtonClassName("outline", "sm")}
                       >
                         查看详情

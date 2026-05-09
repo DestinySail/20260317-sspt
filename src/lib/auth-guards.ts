@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getOptionalSession } from "@/lib/auth-session";
 
 export async function requireUser(callbackUrl: string) {
-  const session = await auth();
+  const session = await getOptionalSession();
 
   if (!session?.user) {
     redirect(`/api/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
@@ -12,7 +12,7 @@ export async function requireUser(callbackUrl: string) {
 }
 
 export async function requireAdmin(callbackUrl = "/admin") {
-  const session = await auth();
+  const session = await getOptionalSession();
 
   if (!session?.user) {
     redirect(`/api/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);

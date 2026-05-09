@@ -111,12 +111,14 @@ export default async function MyProjectsPage() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href={`/events/${project.event.slug}/submit`}
+                  prefetch={false}
                   className={linkButtonClassName("default", "sm")}
                 >
                   {project.status === "FINAL" ? "继续编辑作品" : "继续完善草稿"}
                 </Link>
                 <Link
                   href={`/events/${project.event.slug}`}
+                  prefetch={false}
                   className={linkButtonClassName("outline", "sm")}
                 >
                   查看赛事

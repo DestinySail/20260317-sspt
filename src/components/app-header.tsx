@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { signOut } from "@/auth";
+import { IntentLink } from "@/components/intent-link";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
 import { SignInTrigger } from "@/components/sign-in-trigger";
@@ -49,38 +49,38 @@ export async function AppHeader() {
     <header role="banner" aria-label="网站头部" className="sticky top-0 z-40 border-b border-border/80 bg-background/85 backdrop-blur-[12px]">
       <div className="flex h-16 w-full items-center justify-between gap-4 px-6 lg:px-8">
         <div className="flex items-center gap-6">
-          <Link href="/" className="leading-none">
+          <IntentLink href="/" className="leading-none">
             <span className="font-[family-name:var(--font-mono-ui-face)] text-[13px] font-medium tracking-[-0.01em] text-foreground">
               AI 赛事业务管理平台
             </span>
-          </Link>
+          </IntentLink>
 
           <nav aria-label="主导航" className="hidden items-center gap-4 font-[family-name:var(--font-mono-ui-face)] text-[13px] text-muted-foreground md:flex">
-            <Link href="/" className="transition-colors hover:text-foreground">
+            <IntentLink href="/" className="transition-colors hover:text-foreground">
               首页
-            </Link>
+            </IntentLink>
             {session?.user ? (
               <>
-                <Link href="/my/registrations" className="transition-colors hover:text-foreground">
+                <IntentLink href="/my/registrations" className="transition-colors hover:text-foreground">
                   我的报名
-                </Link>
-                <Link href="/my/projects" className="transition-colors hover:text-foreground">
+                </IntentLink>
+                <IntentLink href="/my/projects" className="transition-colors hover:text-foreground">
                   我的作品
-                </Link>
+                </IntentLink>
                 {showJudgeCenter ? (
-                  <Link href="/judge" className="transition-colors hover:text-foreground">
+                  <IntentLink href="/judge" className="transition-colors hover:text-foreground">
                     评审中心
-                  </Link>
+                  </IntentLink>
                 ) : null}
               </>
             ) : null}
             {session?.user?.role === "ADMIN" ? (
-              <Link
+              <IntentLink
                 href="/admin"
                 className="transition-colors hover:text-foreground"
               >
                 管理后台
-              </Link>
+              </IntentLink>
             ) : null}
           </nav>
         </div>

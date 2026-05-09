@@ -107,7 +107,7 @@ export default async function MyRegistrationsPage() {
               </div>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={`/events/${registration.event.slug}`} className={linkButtonClassName("outline", "sm")}>
+                <Link href={`/events/${registration.event.slug}`} prefetch={false} className={linkButtonClassName("outline", "sm")}>
                   查看赛事
                 </Link>
                 {canConfirmRegistration(registration.status) ? (

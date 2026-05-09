@@ -80,18 +80,21 @@ export default async function AdminEventsPage() {
                   <div className="flex flex-wrap gap-2 pt-2">
                     <Link
                       href={`/admin/events/${event.id}/edit`}
+                      prefetch={false}
                       className={linkButtonClassName("outline", "sm")}
                     >
                       编辑
                     </Link>
                     <Link
                       href={`/admin/events/${event.id}/registrations`}
+                      prefetch={false}
                       className={linkButtonClassName("outline", "sm")}
                     >
                       报名
                     </Link>
                     <Link
                       href={`/admin/events/${event.id}/projects`}
+                      prefetch={false}
                       className={linkButtonClassName("outline", "sm")}
                     >
                       作品
@@ -99,6 +102,7 @@ export default async function AdminEventsPage() {
                     {event.published ? (
                       <Link
                         href={`/events/${event.slug}`}
+                        prefetch={false}
                         className={linkButtonClassName("outline", "sm")}
                       >
                         预览
@@ -177,24 +181,28 @@ export default async function AdminEventsPage() {
                         <div className="flex flex-wrap justify-end gap-2">
                           <Link
                             href={`/admin/events/${event.id}/edit`}
+                            prefetch={false}
                             className={linkButtonClassName("outline", "sm")}
                           >
                             编辑
                           </Link>
                           <Link
                             href={`/admin/events/${event.id}/registrations`}
+                            prefetch={false}
                             className={linkButtonClassName("outline", "sm")}
                           >
                             报名管理
                           </Link>
                           <Link
                             href={`/admin/events/${event.id}/projects`}
+                            prefetch={false}
                             className={linkButtonClassName("outline", "sm")}
                           >
                             作品管理
                           </Link>
                           <Link
                             href={`/admin/events/${event.id}/judging`}
+                            prefetch={false}
                             className={linkButtonClassName("outline", "sm")}
                           >
                             评审管理
@@ -202,6 +210,7 @@ export default async function AdminEventsPage() {
                           {event.published ? (
                             <Link
                               href={`/events/${event.slug}`}
+                              prefetch={false}
                               className={linkButtonClassName("outline", "sm")}
                             >
                               预览

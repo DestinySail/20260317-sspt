@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
@@ -14,12 +15,12 @@ function ErrorContent() {
         <p className="mt-2 text-sm text-muted-foreground">
           错误类型：{error ?? "未知"}
         </p>
-        <a
+        <Link
           href="/"
           className="mt-4 inline-block text-sm underline text-primary"
         >
           返回首页
-        </a>
+        </Link>
       </div>
     </div>
   );

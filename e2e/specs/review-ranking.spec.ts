@@ -1,7 +1,6 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "../fixtures/test";
 import { seedReviewRankingScenario, shiftEventPhase } from "../helpers/scenarios";
-import { fieldControl } from "../helpers/ui";
 import { E2E_USERS } from "../helpers/users";
 
 test("管理员分配评委后可完成评分、汇总榜单并公开排名", async ({

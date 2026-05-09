@@ -25,6 +25,7 @@ export default async function EventDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const sessionPromise = getOptionalSession();
   const { slug } = await params;
   const event = await getPublishedEventBySlug(slug);
 
@@ -32,12 +33,12 @@ export default async function EventDetailPage({
     notFound();
   }
 
-  const session = await getOptionalSession();
-  const rankingData = event.rankingsPublished ? await getPublishedEventRankingBySlug(slug) : null;
-  const currentRegistration = session?.user
-    ? await getUserEventRegistration(event.id, session.user.id)
-    : null;
-  const currentProject = session?.user ? await getUserEventProject(event.id, session.user.id) : null;
+  const session = await sessionPromise;
+  const [rankingData, currentRegistration, currentProject] = await Promise.all([
+    event.rankingsPublished ? getPublishedEventRankingBySlug(slug) : Promise.resolve(null),
+    session?.user ? getUserEventRegistration(event.id, session.user.id) : Promise.resolve(null),
+    session?.user ? getUserEventProject(event.id, session.user.id) : Promise.resolve(null),
+  ]);
   const authReady = Boolean(process.env.AUTH_SECRET?.trim()) && getConfiguredAuthProviders().length > 0;
   const registrationOpen = canRegisterForEvent(event);
   const submissionOpen = canSubmitProjectForEvent(event);

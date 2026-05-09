@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { LayoutDashboard, Trophy } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { IntentLink } from "@/components/intent-link";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -43,9 +43,11 @@ export function AdminSidebar() {
           const isActive = isAdminNavItemActive(pathname, item.href);
 
           return (
-            <Link
+            <IntentLink
               key={item.href}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              prefetchOnIntent={!isActive}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 text-sm transition-colors",
                 isActive
@@ -55,7 +57,7 @@ export function AdminSidebar() {
             >
               <Icon className="size-4" />
               <span>{item.label}</span>
-            </Link>
+            </IntentLink>
           );
         })}
       </nav>

@@ -70,10 +70,10 @@ export default async function JudgeDashboardPage() {
               </div>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={`/judge/events/${event.eventId}`} className={linkButtonClassName("default", "sm")}>
+                <Link href={`/judge/events/${event.eventId}`} prefetch={false} className={linkButtonClassName("default", "sm")}>
                   进入评审
                 </Link>
-                <Link href={`/events/${event.eventSlug}`} className={linkButtonClassName("outline", "sm")}>
+                <Link href={`/events/${event.eventSlug}`} prefetch={false} className={linkButtonClassName("outline", "sm")}>
                   查看赛事
                 </Link>
               </div>

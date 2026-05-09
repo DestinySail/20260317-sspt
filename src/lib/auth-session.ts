@@ -1,6 +1,7 @@
+import { cache } from "react";
 import { auth } from "@/auth";
 
-export async function getOptionalSession() {
+export const getOptionalSession = cache(async function getOptionalSession() {
   if (!process.env.AUTH_SECRET?.trim()) {
     return null;
   }
@@ -10,4 +11,4 @@ export async function getOptionalSession() {
   } catch {
     return null;
   }
-}
+});

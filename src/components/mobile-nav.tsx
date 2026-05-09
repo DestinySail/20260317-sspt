@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { IntentLink } from "@/components/intent-link";
 import { Button } from "@/components/ui/button";
 
 export function MobileNav({
@@ -15,6 +16,7 @@ export function MobileNav({
   userRole?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div className="relative md:hidden">
@@ -38,16 +40,22 @@ export function MobileNav({
           />
           <div className="absolute right-0 top-full z-50 mt-2 min-w-48 border border-border bg-background/98 px-6 py-4 shadow-lg backdrop-blur">
             <nav aria-label="移动端导航" className="flex flex-col gap-1">
-              {items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="min-h-11 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  onClick={() => setOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {items.map((item) => {
+                const isActive = pathname === item.href;
+
+                return (
+                  <IntentLink
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    prefetchOnIntent={!isActive}
+                    className="min-h-11 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    onClick={() => setOpen(false)}
+                  >
+                    {item.label}
+                  </IntentLink>
+                );
+              })}
             </nav>
 
             {userLabel ? (

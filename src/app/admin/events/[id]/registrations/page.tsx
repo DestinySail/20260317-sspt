@@ -62,13 +62,13 @@ export default async function AdminEventRegistrationsPage({
         }
         actions={
           <>
-            <Link href={exportHref} className={linkButtonClassName("outline", "sm")}>
+            <Link href={exportHref} prefetch={false} className={linkButtonClassName("outline", "sm")}>
               导出 CSV
             </Link>
-            <Link href={`/admin/events/${id}/edit`} className={linkButtonClassName("outline", "sm")}>
+            <Link href={`/admin/events/${id}/edit`} prefetch={false} className={linkButtonClassName("outline", "sm")}>
               编辑赛事
             </Link>
-            <Link href="/admin/events" className={linkButtonClassName("outline", "sm")}>
+            <Link href="/admin/events" prefetch={false} className={linkButtonClassName("outline", "sm")}>
               返回赛事列表
             </Link>
           </>
@@ -121,7 +121,7 @@ export default async function AdminEventRegistrationsPage({
             </Button>
           </div>
           <div className="flex items-end">
-            <Link href={`/admin/events/${id}/registrations`} className={linkButtonClassName("outline", "sm")}>
+            <Link href={`/admin/events/${id}/registrations`} prefetch={false} className={linkButtonClassName("outline", "sm")}>
               重置
             </Link>
           </div>
