@@ -2,6 +2,7 @@ import Link from "next/link";
 import { signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
+import { SignInTrigger } from "@/components/sign-in-trigger";
 import { getConfiguredAuthProviders } from "@/lib/auth-providers";
 import { getOptionalSession } from "@/lib/auth-session";
 import { hasJudgeAssignments } from "@/lib/reviews/queries";
@@ -118,9 +119,7 @@ export async function AppHeader() {
               </form>
             </>
           ) : authReady ? (
-            <Link href="/api/auth/signin" prefetch={false} className={linkButtonClassName}>
-              登录
-            </Link>
+            <SignInTrigger providers={providers} callbackUrl="/" className={linkButtonClassName} />
           ) : (
             <span className="hidden border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground sm:inline-flex">
               待配置 OAuth
