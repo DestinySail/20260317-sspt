@@ -26,7 +26,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
             await prisma.user.updateMany({
               where: { id: user.id },
-              data: { role: getRoleForEmail(user.email) },
+              data: {
+                role: getRoleForEmail(user.email),
+                emailVerified: new Date(),
+              },
             });
           },
         },
