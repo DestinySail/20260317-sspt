@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { DM_Sans, IBM_Plex_Mono, JetBrains_Mono } from "next/font/google";
-import { AppHeader } from "@/components/app-header";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -35,8 +34,7 @@ export default function RootLayout({
       className={`${dmSans.variable} ${jetBrainsMono.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
-        <AppHeader />
-        <main id="main-content" aria-label="主内容区域" className="flex flex-1 flex-col">{children}</main>
+        {children}
       </body>
     </html>
   );

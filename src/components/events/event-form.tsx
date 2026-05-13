@@ -31,6 +31,7 @@ type EventFormProps = {
   initialValues?: EventFormInitialValues;
   submitLabel?: string;
   helperText?: string;
+  showGenerateLanding?: boolean;
 };
 
 type ArrayFieldName =
@@ -45,6 +46,7 @@ export function EventForm({
   initialValues,
   submitLabel = "创建赛事",
   helperText = "创建后默认保存为草稿，可回到列表页发布。",
+  showGenerateLanding = false,
 }: EventFormProps) {
   const router = useRouter();
   const [values, setValues] = useState<EventFormInput>(() =>
@@ -55,6 +57,7 @@ export function EventForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[] | undefined>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [shouldGenerateLanding, setShouldGenerateLanding] = useState(false);
 
   function updateValue<Key extends keyof EventFormInput>(key: Key, value: EventFormInput[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -103,7 +106,11 @@ export function EventForm({
         return;
       }
 
-      router.push("/admin/events");
+      if (shouldGenerateLanding && result.success) {
+        router.push(`/admin/events/${result.data.id}/generating`);
+      } else {
+        router.push("/admin/events");
+      }
       router.refresh();
     });
   }
@@ -554,10 +561,27 @@ export function EventForm({
             <Button type="button" variant="outline" onClick={() => router.push("/admin/events")}>
               取消
             </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? <LoaderCircle className="animate-spin" /> : null}
-              {isPending ? "提交中..." : submitLabel}
-            </Button>
+            {showGenerateLanding ? (
+              <>
+                <Button type="submit" disabled={isPending} onClick={() => setShouldGenerateLanding(false)}>
+                  {isPending && !shouldGenerateLanding ? <LoaderCircle className="animate-spin" /> : null}
+                  {isPending && !shouldGenerateLanding ? "保存中..." : "仅保存"}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  onClick={() => setShouldGenerateLanding(true)}
+                >
+                  {isPending && shouldGenerateLanding ? <LoaderCircle className="animate-spin" /> : null}
+                  {isPending && shouldGenerateLanding ? "保存中..." : "保存并生成赛事页"}
+                </Button>
+              </>
+            ) : (
+              <Button type="submit" disabled={isPending}>
+                {isPending ? <LoaderCircle className="animate-spin" /> : null}
+                {isPending ? "提交中..." : submitLabel}
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import { LoaderCircle, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { deleteEvent } from "@/app/admin/events/actions";
+import { deleteEvent } from "@/app/(app)/admin/events/actions";
 import { Button } from "@/components/ui/button";
 
 type EventDeleteButtonProps = {

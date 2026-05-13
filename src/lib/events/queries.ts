@@ -29,12 +29,20 @@ const eventDetailsSelect = {
 
 type EventDetailsRecord = Prisma.EventGetPayload<{ select: typeof eventDetailsSelect }>;
 
+type LandingPageInfo = {
+  id: string;
+  styleHint: string;
+  createdAt: Date;
+  updatedAt: Date;
+} | null;
+
 export type EventDetails = Omit<
   EventDetailsRecord,
   "tracks" | "challenges" | "prizes" | "scoringCriteria" | "customFields"
 > &
   ReturnType<typeof parseEventJsonFields> & {
     phase: EventPhase;
+    landingPage?: LandingPageInfo;
   };
 
 export async function listAdminEvents() {
@@ -86,7 +94,17 @@ export async function getPublishedEventBySlug(slug: string) {
   try {
     const event = await prisma.event.findUnique({
       where: { slug },
-      select: eventDetailsSelect,
+      select: {
+        ...eventDetailsSelect,
+        landingPage: {
+          select: {
+            id: true,
+            styleHint: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
     });
 
     if (!event || !event.published) {
@@ -109,7 +127,17 @@ export async function getAdminEventById(id: string) {
   try {
     const event = await prisma.event.findUnique({
       where: { id },
-      select: eventDetailsSelect,
+      select: {
+        ...eventDetailsSelect,
+        landingPage: {
+          select: {
+            id: true,
+            styleHint: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
     });
 
     if (!event) {
@@ -122,10 +150,11 @@ export async function getAdminEventById(id: string) {
   }
 }
 
-function mapEventDetails(event: EventDetailsRecord): EventDetails {
+function mapEventDetails(event: EventDetailsRecord & { landingPage?: LandingPageInfo }): EventDetails {
   return {
     ...event,
     ...parseEventJsonFields(event),
     phase: getEventPhase(event),
+    landingPage: event.landingPage ?? null,
   };
 }

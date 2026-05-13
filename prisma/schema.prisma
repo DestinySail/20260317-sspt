@@ -112,6 +112,7 @@ model Event {
   projects      Project[]
   projectScores ProjectScore[]
   judges        EventJudge[]
+  landingPage   EventLandingPage?
 
   @@index([published, startDate, createdAt])
 }
@@ -186,4 +187,15 @@ model EventJudge {
 
   @@unique([eventId, userId])
   @@index([userId])
+}
+
+model EventLandingPage {
+  id        String   @id @default(uuid())
+  eventId   String   @unique
+  styleHint String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }

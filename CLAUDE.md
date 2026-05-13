@@ -147,3 +147,17 @@ src/app/my/
 - 测试文件与实现文件相邻放置: `src/lib/foo.ts` → `src/lib/foo.test.ts`
 
 @AGENTS.md
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues (`DestinySail/20260317-sspt`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Standard five-role vocabulary (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout. See `docs/agents/domain.md`.
