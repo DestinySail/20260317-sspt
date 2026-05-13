@@ -58,6 +58,26 @@
 
 ## 当前产品进度
 
-- Step 1 已完成：项目脚手架、Tailwind/shadcn、Prisma schema、Auth.js、管理员角色映射、后台基础布局、首批 Vitest 测试都已接入。
-- 当前主线是 Step 2：赛事 schema、赛事 Server Actions、后台赛事 CRUD/发布流程、前台赛事浏览尚未完整实现。
-- `src/app/admin/events/page.tsx` 仍是占位页面，`src/app/page.tsx` 目前展示的是环境配置与项目进度，而不是真实赛事数据。
+> 最后更新：2026-05-13 | 总进度：87/87 任务完成 ✅
+
+### 已完成
+
+- **Step 1 项目脚手架** ✅：Next.js 16、Tailwind/shadcn、Prisma schema、Auth.js、管理员角色映射、后台基础布局、Vitest 测试框架。
+- **Step 2 赛事管理** ✅：后台创建/编辑/发布/取消发布/草稿删除、前台列表/详情联动、slug 自动生成、时间窗口校验、阶段计算。
+- **Step 3 报名流程** ✅：用户报名、管理员审核、用户确认/取消、后台批量审核与 CSV 导出、报名状态机。
+- **Step 3.5 组件抽取** ✅：`format.ts`、`MetricCard`、`InfoItem`、`EmptyState`、`PageHeaderCard` 等共用组件，移动端汉堡菜单。
+- **Step 4 作品提交** ✅：前台提交页、我的作品页、后台作品管理页、CSV 导出、草稿/终稿状态管理。
+- **UI 设计刷新** ✅：暖调极简风格、铜橘主色、IBM Plex Mono 字体、零圆角设计、骨架屏 loading。
+- **Step 5 评分系统** ✅：管理后台评分管理、评委待评列表、单赛事评分界面、维度权重评分。
+- **Step 6 排名系统** ✅：加权平均排名计算、后台排名管理、前台排名公示、发布/取消发布。
+- **Step 7 测试** ✅：Vitest 81 tests、Playwright 3 E2E specs、GitHub Actions CI 全量绿灯。
+- **Step 8 部署上线** ✅：Vercel 生产环境已部署，地址 https://sspt-ai.vercel.app/
+
+### 关键页面状态
+
+- `src/app/page.tsx` — 前台首页，展示已发布赛事列表（非占位页面）
+- `src/app/admin/events/page.tsx` — 后台赛事列表，完整 CRUD 功能（非占位页面）
+- `src/app/events/[slug]/page.tsx` — 赛事详情页，含报名入口和排名公示
+- `src/app/judge/page.tsx` — 评委待评赛事总览
+- `src/app/my/registrations/page.tsx` — 我的报名页
+- `src/app/my/projects/page.tsx` — 我的作品页

@@ -819,23 +819,29 @@ MVP 为**单租户**模式，多租户隔离推迟到 Phase 1.5。
 
 **目标**: 生产环境可访问。
 
-- [ ] Neon 数据库创建生产实例
-- [ ] NextAuth 配置生产环境 (OAuth 回调 URL)
-- [ ] Vercel 项目创建 + 环境变量配置
+- [x] Neon 数据库创建生产实例
+- [x] NextAuth 配置生产环境 (OAuth 回调 URL)
+- [x] Vercel 项目创建 + 环境变量配置
   - DATABASE_URL
   - NEXTAUTH_SECRET
   - NEXTAUTH_URL
   - GITHUB_ID / GITHUB_SECRET
   - GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET
   - ADMIN_EMAILS
-- [ ] `git push` 自动部署
-- [ ] 域名配置 (可选 — Vercel 提供免费 .vercel.app 域名)
-- [ ] 冒烟测试:
-  - [ ] 创建赛事 → 发布
-  - [ ] 用户报名 → 审核 → 确认
-  - [ ] 提交作品
-  - [ ] 评委评分
-  - [ ] 查看排名
+- [x] `git push` 自动部署
+- [x] 域名配置 (Vercel 免费 .vercel.app 域名)
+- [x] 冒烟测试:
+  - [x] 创建赛事 → 发布
+  - [x] 用户报名 → 审核 → 确认
+  - [x] 提交作品
+  - [x] 评委评分
+  - [x] 查看排名
+
+**Step 8 当前进度（2026-05-13，项目进度存档）**
+
+1. 已完成：Neon 生产数据库创建、Vercel 项目部署、环境变量配置、生产环境冒烟测试
+2. 生产地址：https://sspt-ai.vercel.app/
+3. MVP 全量交付完成
 
 ---
 
