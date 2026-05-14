@@ -1,6 +1,6 @@
 import { getAIConfig } from "./config";
 import { buildPrompts, type EventData } from "./prompt-builder";
-import { formatSSE, parseOpenAIChunk } from "./sse-stream";
+import { formatSSE, parseOpenAIChunk, parseAnthropicChunk } from "./sse-stream";
 
 export type { EventData };
 
@@ -34,24 +34,53 @@ export function generateLandingPageStream(
       };
 
       try {
-        const response = await fetch(`${config.baseUrl}/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config.apiKey}`,
-          },
-          body: JSON.stringify({
-            model: config.modelName,
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt },
-            ],
-            temperature: 0.8,
-            max_tokens: 16000,
-            stream: true,
-          }),
-          signal: abortController.signal,
-        });
+        const isAnthropicFormat = config.provider === "anthropic";
+
+        const fetchOptions: RequestInit = isAnthropicFormat
+          ? {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-api-key": config.apiKey,
+                "anthropic-version": "2023-06-01",
+                "anthropic-dangerous-direct-browser-access": "true",
+              },
+              body: JSON.stringify({
+                model: config.modelName,
+                messages: [
+                  { role: "user", content: systemPrompt },
+                  { role: "user", content: userPrompt },
+                ],
+                temperature: 0.8,
+                max_tokens: 16000,
+                stream: true,
+              }),
+              signal: abortController.signal,
+            }
+          : {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${config.apiKey}`,
+              },
+              body: JSON.stringify({
+                model: config.modelName,
+                messages: [
+                  { role: "system", content: systemPrompt },
+                  { role: "user", content: userPrompt },
+                ],
+                temperature: 0.8,
+                max_tokens: 16000,
+                stream: true,
+              }),
+              signal: abortController.signal,
+            };
+
+        const endpoint = isAnthropicFormat
+          ? `${config.baseUrl}/v1/messages`
+          : `${config.baseUrl}/chat/completions`;
+
+        const response = await fetch(endpoint, fetchOptions);
 
         clearTimeout(timeoutId);
 
@@ -86,8 +115,10 @@ export function generateLandingPageStream(
             const lines = buffer.split("\n");
             buffer = lines.pop() ?? "";
 
+            const parseChunk = isAnthropicFormat ? parseAnthropicChunk : parseOpenAIChunk;
+
             for (const line of lines) {
-              const result = parseOpenAIChunk(line);
+              const result = parseChunk(line);
               if (result === "done") {
                 write({ type: "done", html: fullHtml });
                 controller.close();

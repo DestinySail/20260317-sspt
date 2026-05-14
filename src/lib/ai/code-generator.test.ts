@@ -67,6 +67,7 @@ describe("generateLandingPageStream", () => {
   beforeEach(() => {
     process.env = {
       ...originalEnv,
+      AI_PROVIDER: "openai",
       AI_BASE_URL: "https://api.test.com/v1",
       AI_API_KEY: "test-key",
       AI_MODEL_NAME: "test-model",

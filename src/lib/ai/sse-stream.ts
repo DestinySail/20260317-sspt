@@ -38,6 +38,30 @@ export function parseOpenAIChunk(line: string): string | null | "done" {
   }
 }
 
+// Anthropic 流式响应解析（text/event-stream 格式）
+// 事件类型：message_start, content_block_start, content_block_delta, content_block_stop, message_stop
+export function parseAnthropicChunk(line: string): string | null | "done" {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("data: ")) return null;
+
+  const dataStr = trimmed.slice(6);
+  if (dataStr === "[DONE]") return "done";
+
+  try {
+    const event = JSON.parse(dataStr);
+    // content_block_delta 事件包含 delta.text
+    if (event.type === "content_block_delta") {
+      const text = event.delta?.text;
+      return text ?? null;
+    }
+    // message_stop 表示流结束
+    if (event.type === "message_stop") return "done";
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function createSSEStream(
   aiResponseStream: ReadableStream<Uint8Array>
 ): ReadableStream<Uint8Array> {
