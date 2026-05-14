@@ -1,11 +1,14 @@
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { updateEvent } from "@/app/(app)/admin/events/actions";
 import { EventDeleteButton } from "@/components/events/event-delete-button";
 import { EventForm } from "@/components/events/event-form";
+import { EventLandingVersions } from "@/components/events/event-landing-versions";
 import { GenerateLandingButton } from "@/components/events/generate-landing-button";
 import { PageHeaderCard } from "@/components/page-header-card";
 import { Badge } from "@/components/ui/badge";
+import { activateLandingPage, getEventLandingPages } from "@/lib/ai/queries";
 import { linkButtonClassName } from "@/lib/button-link";
 import { getAdminEventById } from "@/lib/events/queries";
 import { type EventFormInput } from "@/lib/events/schema";
@@ -16,14 +19,18 @@ export default async function AdminEditEventPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const event = await getAdminEventById(id);
+  const [event, landingPages] = await Promise.all([
+    getAdminEventById(id),
+    getEventLandingPages(id),
+  ]);
 
   if (!event) {
     notFound();
   }
 
   const eventId = event.id;
-  const hasLandingPage = Boolean(event.landingPage);
+  const eventSlug = event.slug;
+  const hasLandingPage = landingPages.length > 0;
 
   async function submitAction(input: EventFormInput) {
     "use server";
@@ -32,6 +39,22 @@ export default async function AdminEditEventPage({
       ...input,
       eventId,
     });
+  }
+
+  async function activateLandingAction(formData: FormData) {
+    "use server";
+
+    const landingPageId = formData.get("landingPageId");
+    if (typeof landingPageId !== "string" || landingPageId.length === 0) {
+      throw new Error("请提供落地页 ID");
+    }
+
+    await activateLandingPage(landingPageId);
+    revalidatePath("/");
+    revalidatePath(`/admin/events/${eventId}/edit`);
+    revalidatePath(`/admin/events`);
+    revalidatePath(`/events/${eventSlug}`);
+    revalidatePath(`/events/${eventSlug}/landing`);
   }
 
   return (
@@ -104,6 +127,12 @@ export default async function AdminEditEventPage({
             ? "保存后会刷新后台列表与前台赛事详情，请确认时间窗口与展示信息无误；若赛事已产生评分，评分维度将被冻结，避免影响已提交评分和榜单汇总。"
             : "保存后仍保持草稿状态，可返回列表后再决定是否发布；若赛事已产生评分，评分维度将被冻结，避免影响已提交评分和榜单汇总。"
         }
+      />
+
+      <EventLandingVersions
+        eventSlug={event.slug}
+        landingPages={landingPages}
+        activateAction={activateLandingAction}
       />
     </div>
   );

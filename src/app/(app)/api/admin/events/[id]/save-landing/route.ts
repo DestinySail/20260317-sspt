@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth-guards";
 import { getPrismaClient } from "@/lib/prisma";
-import { upsertEventLandingPage } from "@/lib/ai/queries";
+import { createEventLandingPage } from "@/lib/ai/queries";
 
 export async function POST(
   request: Request,
@@ -40,14 +40,17 @@ export async function POST(
       );
     }
 
-    const landingPage = await upsertEventLandingPage(id, styleHint, html);
+    const landingPage = await createEventLandingPage(id, styleHint, html);
 
     return NextResponse.json({
       success: true,
+      version: landingPage.version,
       landingPage: {
         id: landingPage.id,
+        version: landingPage.version,
+        isActive: landingPage.isActive,
         styleHint: landingPage.styleHint,
-        updatedAt: landingPage.updatedAt,
+        createdAt: landingPage.createdAt,
       },
     });
   } catch (error) {

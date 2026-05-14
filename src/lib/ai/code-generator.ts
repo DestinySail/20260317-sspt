@@ -105,6 +105,29 @@ export function generateLandingPageStream(
         const decoder = new TextDecoder();
         let fullHtml = "";
         let buffer = "";
+        let inCodePhase = false;
+        let thinkingBuffer = "";
+
+        // 代码开始标记检测
+        const CODE_START_PATTERNS = [
+          /```html/i,
+          /<!DOCTYPE/i,
+          /<html/i,
+        ];
+
+        const detectCodeStart = (text: string) => {
+          for (const pattern of CODE_START_PATTERNS) {
+            if (pattern.test(text)) return true;
+          }
+          return false;
+        };
+
+        const flushThinking = () => {
+          if (thinkingBuffer.length > 0) {
+            write({ type: "thinking", chunk: thinkingBuffer });
+            thinkingBuffer = "";
+          }
+        };
 
         try {
           while (true) {
@@ -120,17 +143,57 @@ export function generateLandingPageStream(
             for (const line of lines) {
               const result = parseChunk(line);
               if (result === "done") {
+                // flush any remaining thinking
+                if (!inCodePhase && thinkingBuffer.length > 0) {
+                  flushThinking();
+                }
                 write({ type: "done", html: fullHtml });
                 controller.close();
                 return;
               }
               if (result !== null) {
-                fullHtml += result;
-                write({ type: "code", chunk: result });
+                if (!inCodePhase) {
+                  // 检查是否进入 code 阶段
+                  const textToCheck = thinkingBuffer + result;
+                  if (detectCodeStart(textToCheck)) {
+                    // 找出代码标记的位置
+                    let markerMatch: RegExpMatchArray | null = null;
+                    for (const pattern of CODE_START_PATTERNS) {
+                      markerMatch = textToCheck.match(pattern);
+                      if (markerMatch) break;
+                    }
+                    if (markerMatch) {
+                      const markerPos = markerMatch.index!;
+                      const thinkingPart = textToCheck.slice(0, markerPos);
+                      if (thinkingPart.length > 0) {
+                        write({ type: "thinking", chunk: thinkingPart });
+                      }
+                      inCodePhase = true;
+                      write({ type: "phase", phase: "code" });
+                      const codePart = textToCheck.slice(markerPos);
+                      if (codePart.length > 0) {
+                        fullHtml += codePart;
+                        write({ type: "code", chunk: codePart });
+                      }
+                      thinkingBuffer = "";
+                    }
+                  } else {
+                    // 还在 thinking 阶段
+                    thinkingBuffer += result;
+                  }
+                } else {
+                  // code 阶段
+                  fullHtml += result;
+                  write({ type: "code", chunk: result });
+                }
               }
             }
           }
 
+          // 流结束时 flush remaining thinking
+          if (!inCodePhase && thinkingBuffer.length > 0) {
+            flushThinking();
+          }
           write({ type: "done", html: fullHtml });
           controller.close();
         } catch (readError) {

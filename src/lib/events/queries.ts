@@ -25,20 +25,40 @@ const eventDetailsSelect = {
   customFields: true,
   createdAt: true,
   updatedAt: true,
+  landingPages: {
+    where: { isActive: true },
+    select: {
+      id: true,
+      version: true,
+      styleHint: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: { version: "desc" },
+    take: 1,
+  },
 } satisfies Prisma.EventSelect;
 
 type EventDetailsRecord = Prisma.EventGetPayload<{ select: typeof eventDetailsSelect }>;
 
 type LandingPageInfo = {
   id: string;
+  version: number;
   styleHint: string;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 } | null;
 
 export type EventDetails = Omit<
   EventDetailsRecord,
-  "tracks" | "challenges" | "prizes" | "scoringCriteria" | "customFields"
+  | "tracks"
+  | "challenges"
+  | "prizes"
+  | "scoringCriteria"
+  | "customFields"
+  | "landingPages"
 > &
   ReturnType<typeof parseEventJsonFields> & {
     phase: EventPhase;
@@ -94,17 +114,7 @@ export async function getPublishedEventBySlug(slug: string) {
   try {
     const event = await prisma.event.findUnique({
       where: { slug },
-      select: {
-        ...eventDetailsSelect,
-        landingPage: {
-          select: {
-            id: true,
-            styleHint: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
+      select: eventDetailsSelect,
     });
 
     if (!event || !event.published) {
@@ -127,17 +137,7 @@ export async function getAdminEventById(id: string) {
   try {
     const event = await prisma.event.findUnique({
       where: { id },
-      select: {
-        ...eventDetailsSelect,
-        landingPage: {
-          select: {
-            id: true,
-            styleHint: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
+      select: eventDetailsSelect,
     });
 
     if (!event) {
@@ -150,11 +150,13 @@ export async function getAdminEventById(id: string) {
   }
 }
 
-function mapEventDetails(event: EventDetailsRecord & { landingPage?: LandingPageInfo }): EventDetails {
+function mapEventDetails(event: EventDetailsRecord): EventDetails {
+  const { landingPages, ...eventDetails } = event;
+
   return {
-    ...event,
-    ...parseEventJsonFields(event),
-    phase: getEventPhase(event),
-    landingPage: event.landingPage ?? null,
+    ...eventDetails,
+    ...parseEventJsonFields(eventDetails),
+    phase: getEventPhase(eventDetails),
+    landingPage: landingPages[0] ?? null,
   };
 }

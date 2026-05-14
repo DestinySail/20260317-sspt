@@ -24,6 +24,8 @@ async function collectSSEEvents(
   const decoder = new TextDecoder();
   const events: { type: string; data: string }[] = [];
   let buffer = "";
+  let currentEventType = "";
+  let currentEventData = "";
 
   while (true) {
     const { done, value } = await reader.read();
@@ -36,25 +38,40 @@ async function collectSSEEvents(
     for (const part of parts) {
       if (!part.trim()) continue;
       const lines = part.split("\n");
-      let eventType = "";
-      let eventData = "";
       for (const line of lines) {
-        if (line.startsWith("event: ")) eventType = line.slice(7);
-        else if (line.startsWith("data: ")) eventData = line.slice(6);
+        if (line.startsWith("event: ")) {
+          // 如果有待发送的事件，先发送
+          if (currentEventType) {
+            events.push({ type: currentEventType, data: currentEventData });
+          }
+          currentEventType = line.slice(7);
+          currentEventData = "";
+        } else if (line.startsWith("data: ")) {
+          currentEventData = line.slice(6);
+        }
       }
-      if (eventType) events.push({ type: eventType, data: eventData });
     }
   }
 
+  // 处理剩余 buffer
   if (buffer.trim()) {
     const lines = buffer.split("\n");
-    let eventType = "";
-    let eventData = "";
     for (const line of lines) {
-      if (line.startsWith("event: ")) eventType = line.slice(7);
-      else if (line.startsWith("data: ")) eventData = line.slice(6);
+      if (line.startsWith("event: ")) {
+        if (currentEventType) {
+          events.push({ type: currentEventType, data: currentEventData });
+        }
+        currentEventType = line.slice(7);
+        currentEventData = "";
+      } else if (line.startsWith("data: ")) {
+        currentEventData = line.slice(6);
+      }
     }
-    if (eventType) events.push({ type: eventType, data: eventData });
+  }
+
+  // 发送最后的待处理事件
+  if (currentEventType) {
+    events.push({ type: currentEventType, data: currentEventData });
   }
 
   return events;
@@ -191,6 +208,186 @@ describe("generateLandingPageStream", () => {
     expect(events).toHaveLength(1);
     expect(events[0].type).toBe("error");
     expect(events[0].data).toContain("429");
+  });
+
+  it("thinking 文本遇到 ```html 时应切段并发送 phase: code", async () => {
+    const aiChunks = [
+      'data: {"id":"1","choices":[{"delta":{"content":"我来设计一个简约风格的页面。"},"finish_reason":null}]}\n',
+      'data: {"id":"2","choices":[{"delta":{"content":"```html\n"},"finish_reason":null}]}\n',
+      'data: {"id":"3","choices":[{"delta":{"content":"<html>"},"finish_reason":null}]}\n',
+      'data: {"id":"4","choices":[{"delta":{"content":"</html>"},"finish_reason":"stop"}]}\ndata: [DONE]\n',
+    ];
+    globalThis.fetch = vi.fn().mockResolvedValue(createMockAIResponse(aiChunks));
+
+    const { generateLandingPageStream } = await import("@/lib/ai/code-generator");
+    const stream = generateLandingPageStream({
+      eventData: {
+        name: "测试",
+        description: "描述",
+        startDate: "2026-04-01",
+        endDate: "2026-06-30",
+        registrationStart: "2026-04-01",
+        registrationEnd: "2026-05-15",
+        submissionStart: "2026-05-16",
+        submissionEnd: "2026-06-15",
+        reviewStart: "2026-06-16",
+        reviewEnd: "2026-06-30",
+        tracks: [],
+        challenges: [],
+        prizes: [],
+        scoringCriteria: [],
+      },
+      styleHint: "简约",
+      eventSlug: "test-slug",
+    });
+
+    const events = await collectSSEEvents(stream);
+    const thinkingEvents = events.filter((e) => e.type === "thinking");
+    const phaseEvents = events.filter((e) => e.type === "phase");
+    const codeEvents = events.filter((e) => e.type === "code");
+    const doneEvents = events.filter((e) => e.type === "done");
+
+    // thinking 阶段应有内容
+    expect(thinkingEvents.length).toBeGreaterThanOrEqual(1);
+    expect(thinkingEvents.some((e) => e.data.includes("设计"))).toBe(true);
+
+    // phase 事件应在 code 事件之前发送
+    expect(phaseEvents).toHaveLength(1);
+    expect(phaseEvents[0].data).toBe('{"phase":"code"}');
+
+    // code 事件应在 phase 之后，不包含 thinking 内容
+    expect(codeEvents.length).toBeGreaterThanOrEqual(1);
+    expect(codeEvents.some((e) => e.data.includes("<html>"))).toBe(true);
+
+    // done 事件
+    expect(doneEvents).toHaveLength(1);
+  });
+
+  it("thinking 文本遇到 <!DOCTYPE 时应切段并发送 phase: code", async () => {
+    const aiChunks = [
+      'data: {"id":"1","choices":[{"delta":{"content":"让我先分析一下页面结构。"},"finish_reason":null}]}\n',
+      'data: {"id":"2","choices":[{"delta":{"content":"<!DOCTYPE html>"},"finish_reason":null}]}\n',
+      'data: {"id":"3","choices":[{"delta":{"content":"<html><body></body></html>"},"finish_reason":"stop"}]}\ndata: [DONE]\n',
+    ];
+    globalThis.fetch = vi.fn().mockResolvedValue(createMockAIResponse(aiChunks));
+
+    const { generateLandingPageStream } = await import("@/lib/ai/code-generator");
+    const stream = generateLandingPageStream({
+      eventData: {
+        name: "测试",
+        description: "描述",
+        startDate: "2026-04-01",
+        endDate: "2026-06-30",
+        registrationStart: "2026-04-01",
+        registrationEnd: "2026-05-15",
+        submissionStart: "2026-05-16",
+        submissionEnd: "2026-06-15",
+        reviewStart: "2026-06-16",
+        reviewEnd: "2026-06-30",
+        tracks: [],
+        challenges: [],
+        prizes: [],
+        scoringCriteria: [],
+      },
+      styleHint: "简约",
+      eventSlug: "test-slug",
+    });
+
+    const events = await collectSSEEvents(stream);
+    const thinkingEvents = events.filter((e) => e.type === "thinking");
+    const phaseEvents = events.filter((e) => e.type === "phase");
+    const codeEvents = events.filter((e) => e.type === "code");
+
+    expect(thinkingEvents.some((e) => e.data.includes("分析"))).toBe(true);
+    expect(phaseEvents[0].data).toBe('{"phase":"code"}');
+    expect(codeEvents.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("纯代码文本（无 thinking）应直接进 code 阶段，不发 thinking 事件", async () => {
+    const aiChunks = [
+      'data: {"id":"1","choices":[{"delta":{"content":"<html>"},"finish_reason":null}]}\n',
+      'data: {"id":"2","choices":[{"delta":{"content":"<body></body></html>"},"finish_reason":"stop"}]}\ndata: [DONE]\n',
+    ];
+    globalThis.fetch = vi.fn().mockResolvedValue(createMockAIResponse(aiChunks));
+
+    const { generateLandingPageStream } = await import("@/lib/ai/code-generator");
+    const stream = generateLandingPageStream({
+      eventData: {
+        name: "测试",
+        description: "描述",
+        startDate: "2026-04-01",
+        endDate: "2026-06-30",
+        registrationStart: "2026-04-01",
+        registrationEnd: "2026-05-15",
+        submissionStart: "2026-05-16",
+        submissionEnd: "2026-06-15",
+        reviewStart: "2026-06-16",
+        reviewEnd: "2026-06-30",
+        tracks: [],
+        challenges: [],
+        prizes: [],
+        scoringCriteria: [],
+      },
+      styleHint: "简约",
+      eventSlug: "test-slug",
+    });
+
+    const events = await collectSSEEvents(stream);
+    const thinkingEvents = events.filter((e) => e.type === "thinking");
+    const codeEvents = events.filter((e) => e.type === "code");
+    const doneEvents = events.filter((e) => e.type === "done");
+
+    // 无 thinking 事件
+    expect(thinkingEvents).toHaveLength(0);
+    // 直接进 code 阶段
+    expect(codeEvents.length).toBeGreaterThanOrEqual(1);
+    expect(doneEvents).toHaveLength(1);
+  });
+
+  it("thinking 文本遇到 <html（不带 <!DOCTYPE）时应切段", async () => {
+    // 注意：AI 输出 "开始编写 HTML" 时，如果 thinkingBuffer 为空，则不会发送 thinking 事件
+    // 因为检测到 HTML 时 thinkingBuffer 是空的，没有 pending thinking 内容可发
+    // 改为用 "开始编写"（不含 HTML）触发 thinking，然后用 "<html" 触发 phase
+    const aiChunks = [
+      'data: {"id":"1","choices":[{"delta":{"content":"开始编写"},"finish_reason":null}]}\n',
+      "data: {\"id\":\"2\",\"choices\":[{\"delta\":{\"content\":\" <html lang=\\\"zh\\\">\"},\"finish_reason\":null}]}\n",
+      'data: {"id":"3","choices":[{"delta":{"content":"</html>"},"finish_reason":"stop"}]}\ndata: [DONE]\n',
+    ];
+    globalThis.fetch = vi.fn().mockResolvedValue(createMockAIResponse(aiChunks));
+
+    const { generateLandingPageStream } = await import("@/lib/ai/code-generator");
+    const stream = generateLandingPageStream({
+      eventData: {
+        name: "测试",
+        description: "描述",
+        startDate: "2026-04-01",
+        endDate: "2026-06-30",
+        registrationStart: "2026-04-01",
+        registrationEnd: "2026-05-15",
+        submissionStart: "2026-05-16",
+        submissionEnd: "2026-06-15",
+        reviewStart: "2026-06-16",
+        reviewEnd: "2026-06-30",
+        tracks: [],
+        challenges: [],
+        prizes: [],
+        scoringCriteria: [],
+      },
+      styleHint: "简约",
+      eventSlug: "test-slug",
+    });
+
+    const events = await collectSSEEvents(stream);
+    const thinkingEvents = events.filter((e) => e.type === "thinking");
+    const phaseEvents = events.filter((e) => e.type === "phase");
+    const codeEvents = events.filter((e) => e.type === "code");
+
+    expect(thinkingEvents.some((e) => e.data.includes("开始编写"))).toBe(true);
+    expect(phaseEvents).toHaveLength(1);
+    expect(phaseEvents[0].data).toBe('{"phase":"code"}');
+    expect(codeEvents.length).toBeGreaterThanOrEqual(1);
+    const allCodeData = codeEvents.map((e) => e.data).join("");
+    expect(allCodeData).toContain("<html");
   });
 
   it("AI API 超时时应发送 error 事件而不是永远挂起", async () => {

@@ -99,6 +99,21 @@ export default async function AdminEventsPage() {
                     >
                       作品
                     </Link>
+                    {event.landingPage ? (
+                      <Link
+                        href={`/events/${event.slug}/landing`}
+                        prefetch={false}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={linkButtonClassName("outline", "sm")}
+                      >
+                        查看落地页
+                      </Link>
+                    ) : (
+                      <span className="inline-flex min-h-11 items-center px-2.5 text-xs text-muted-foreground">
+                        未生成
+                      </span>
+                    )}
                     {event.published ? (
                       <Link
                         href={`/events/${event.slug}`}
@@ -207,6 +222,21 @@ export default async function AdminEventsPage() {
                           >
                             评审管理
                           </Link>
+                          {event.landingPage ? (
+                            <Link
+                              href={`/events/${event.slug}/landing`}
+                              prefetch={false}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={linkButtonClassName("outline", "sm")}
+                            >
+                              查看落地页
+                            </Link>
+                          ) : (
+                            <span className="inline-flex min-h-11 items-center px-2.5 text-xs text-muted-foreground">
+                              未生成
+                            </span>
+                          )}
                           {event.published ? (
                             <Link
                               href={`/events/${event.slug}`}

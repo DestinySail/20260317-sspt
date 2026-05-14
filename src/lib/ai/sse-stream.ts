@@ -1,7 +1,9 @@
 export type SSEEvent =
   | { type: "code"; chunk: string }
   | { type: "done"; html: string }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string }
+  | { type: "thinking"; chunk: string }
+  | { type: "phase"; phase: string };
 
 export function formatSSE(event: SSEEvent): string {
   switch (event.type) {
@@ -11,6 +13,10 @@ export function formatSSE(event: SSEEvent): string {
       return `event: done\ndata: ${JSON.stringify({ html: event.html })}\n\n`;
     case "error":
       return `event: error\ndata: ${JSON.stringify({ message: event.message })}\n\n`;
+    case "thinking":
+      return `event: thinking\ndata: ${JSON.stringify({ chunk: event.chunk })}\n\n`;
+    case "phase":
+      return `event: phase\ndata: ${JSON.stringify({ phase: event.phase })}\n\n`;
   }
 }
 

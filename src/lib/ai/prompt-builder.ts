@@ -34,32 +34,37 @@ export function loadSkillContent(): string {
 }
 
 export function buildSystemPrompt(skillContent: string): string {
-  return `你是一个顶级的前端工程师和视觉设计师。你的任务是为赛事活动生成一个完整的、可直接在浏览器中运行的 HTML 页面。
-
-## 设计指南
-
-${skillContent}
-
-## 技术要求
-
-1. 输出一个完整的 \`<!DOCTYPE html>\` 文档
-2. 所有 CSS 必须写在 \`<style>\` 标签内（内联样式）
-3. 所有 JavaScript 必须写在 \`<script>\` 标签内
-4. 字体可以通过 \`<link>\` 引入 Google Fonts CDN
-5. 页面必须是响应式的，在移动端和桌面端都能正常显示
-6. 使用语义化 HTML 标签
-7. 确保页面可访问性（适当的 alt 文本、ARIA 标签等）
-8. 所有文案使用中文
-9. 页面中的"立即报名"按钮链接到 \`/events/{slug}/register\`（slug 会在 user prompt 中提供）
-10. 页面中的"查看作品"按钮链接到 \`/events/{slug}/submit\`
-11. 页面中的"返回赛事详情"按钮链接到 \`/events/{slug}\`
-
-## 输出要求
-
-- 只输出完整的 HTML 代码，不要包含任何解释、markdown 代码块标记或其他内容
-- 确保 HTML 语法正确，可以在现代浏览器中直接渲染
-- 代码要整洁、有组织，CSS 变量定义在 \`:root\` 中
-- 不要使用任何需要构建工具或 npm 包的资源`;
+  const output = [
+    "你是一个顶级的前端工程师和视觉设计师。你的任务是为赛事活动生成一个完整的、可直接在浏览器中运行的 HTML 页面。",
+    "",
+    "## 设计指南",
+    "",
+    skillContent,
+    "",
+    "## 技术要求",
+    "",
+    "1. 先用 ```html 标记开始代码块，然后输出完整的 <!DOCTYPE html> 文档",
+    "2. 所有 CSS 必须写在 <style> 标签内（内联样式）",
+    "3. 所有 JavaScript 必须写在 <script> 标签内",
+    "4. 字体可以通过 <link> 引入 Google Fonts CDN",
+    "5. 页面必须是响应式的，在移动端和桌面端都能正常显示",
+    "6. 使用语义化 HTML 标签",
+    "7. 确保页面可访问性（适当的 alt 文本、ARIA 标签等）",
+    "8. 所有文案使用中文",
+    "9. 页面中的\"立即报名\"按钮链接到 /events/{slug}/register（slug 会在 user prompt 中提供）",
+    "10. 页面中的\"查看作品\"按钮链接到 /events/{slug}/submit",
+    "11. 页面中的\"返回赛事详情\"按钮链接到 /events/{slug}",
+    "",
+    "## 输出要求",
+    "",
+    "**先输出你的设计思路和分析（用中文），这部分内容会在代码开始标记前被捕获**",
+    "当你准备好输出代码时，以 ```html 开头（后面紧跟 <!DOCTYPE 或 <html），这部分开始会被作为代码捕获",
+    "只输出完整的 HTML 代码在代码块内，不要在代码块外输出任何内容",
+    "确保 HTML 语法正确，可以在现代浏览器中直接渲染",
+    "代码要整洁、有组织，CSS 变量定义在 :root 中",
+    "不要使用任何需要构建工具或 npm 包的资源",
+  ];
+  return output.join("\n");
 }
 
 export function buildUserPrompt(

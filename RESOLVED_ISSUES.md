@@ -145,3 +145,35 @@
 - 结果：综合健康分 85/100，发现 10 个 issues（全部归档到 `.gstack/qa-reports/qa-report-localhost-2026-04-27.md`），其中 3 个 High（报名表单 stale validation、`window.confirm/alert` 替代为 AlertDialog、404/SignIn/Admin 首页占位文案）、3 个 Medium、4 个 Low；不阻塞核心流程使用。
 - 验证：控制台干净，关键流程（创建赛事 → 发布 → 报名 → 录取 → 确认 → 提交 → 评审 → 排名）端到端可用。
 - 涉及文件：`.gstack/qa-reports/qa-report-localhost-2026-04-27.md`、`.gstack/qa-reports/screenshots/*`
+
+## 2026-05-14 — 生成落地页进度页代码区与思考区间隔过大，且代码流没有贴底显示
+
+- 现象：后台生成赛事落地页时，“思考过程”区域和下面代码显示区之间出现大块空白；进入代码生成阶段后，代码内容没有自动保持在滚动容器底部；代码区上下两端都被透明渐隐处理，底部内容也会被淡化。
+- 根因：`src/components/events/generating-page-content.tsx` 中思考过程容器使用 `flex-1` 占满剩余空间，导致代码区被推到页面下方；代码滚动容器没有在 `codeContent` 更新后同步设置 `scrollTop`；代码 mask 使用上下对称的 `linear-gradient(transparent 0%, black 15%, black 85%, transparent 100%)`。
+- 解决方案：抽出 `generating-page-layout.ts` 保存布局契约；将思考过程容器改为 `flex-none`，让代码区紧跟其后；为代码滚动容器增加 ref，并在代码内容追加或状态完成时用 `requestAnimationFrame` 滚动到底；将代码 mask 改为仅顶部渐隐的 `linear-gradient(transparent 0%, black 8%, black 100%)`，并移除底部渐隐层。
+- 验证结果：先新增/更新 `src/components/events/generating-page-content.test.tsx` 覆盖“只顶部渐隐”和“思考区不占满页面”的布局行为，确认红灯后实现修复；`bunx vitest run src/components/events/generating-page-content.test.tsx`、`bun run typecheck`、`bun run lint` 均通过。本地浏览器打开生成页时因未登录被 Auth 重定向到登录页，未完成真实登录态视觉截图。
+- 涉及文件：`src/components/events/generating-page-content.tsx`、`src/components/events/generating-page-layout.ts`、`src/components/events/generating-page-content.test.tsx`
+
+## 2026-05-14 — 生成落地页保存接口 500 且完成态缺少预览按钮
+
+- 现象：生成完成后点击保存，请求 `POST /api/admin/events/[id]/save-landing` 返回 500；生成完成态只显示“丢弃 / 保存”，没有 PRD 要求的“预览”按钮。
+- 根因：`schema.prisma` 已改为多版本 `EventLandingPage`，但迁移目录缺少创建/升级 `EventLandingPage` 表的 migration，当前开发库可能没有 `version` / `isActive` 等字段或表结构；保存接口响应也没有按 PRD 暴露顶层 `version` 和 `isActive`；完成态 UI 没有实现预览动作。
+- 解决方案：新增版本化落地页迁移，兼容旧开发库中可能已存在的一页一赛事旧表，移除旧 `eventId` 唯一索引并创建 `(eventId, version)` 唯一索引；保存接口返回 `version`、`landingPage.isActive`；生成完成态增加“预览”按钮，用 Blob URL 在新标签页打开当前未保存 HTML。
+- 验证结果：先新增保存接口测试和完成态动作测试并确认红灯，再实现修复；`bunx vitest run src/app/(app)/api/admin/events/[id]/save-landing/route.test.ts`、`bunx vitest run src/components/events/generating-page-content.test.tsx`、`bun run lint`、`bun run typecheck`、`bun run test` 均通过。`bun run db:migrate` 被既有 `20260510023345_add_performance_indexes` 中 `CREATE INDEX CONCURRENTLY` 的 shadow DB 事务限制挡住；已用 `bunx prisma db execute --schema prisma/schema.prisma --file prisma/migrations/20260514154800_add_event_landing_page_versions/migration.sql` 将本次表结构应用到当前开发库，并查询确认 `version` / `isActive` 字段存在且与 schema 对齐。
+- 涉及文件：`prisma/migrations/20260514154800_add_event_landing_page_versions/migration.sql`、`src/app/(app)/api/admin/events/[id]/save-landing/route.ts`、`src/app/(app)/api/admin/events/[id]/save-landing/route.test.ts`、`src/components/events/generating-page-content.tsx`、`src/components/events/generating-page-layout.ts`、`src/components/events/generating-page-content.test.tsx`
+
+## 2026-05-14 — 赛事列表缺少“查看落地页”入口
+
+- 现象：首页赛事列表和后台赛事列表没有显示 PRD 要求的“查看落地页”按钮，管理员或参赛者需要绕到详情或编辑页才可能找到落地页入口。
+- 根因：`listAdminEvents()` / `listPublishedEvents()` 复用的 `eventDetailsSelect` 没有读取 `EventLandingPage` 的激活版本；页面虽然已有 `event.landingPage` 的使用场景，但列表查询返回的数据里始终没有当前激活落地页。
+- 解决方案：在赛事查询层统一选择 `landingPages where isActive=true`，映射为页面使用的单个 `landingPage`；首页卡片增加“查看详情”和有激活版本时的“查看落地页”按钮；后台列表移动端与桌面操作区显示“查看落地页”或“未生成”。
+- 验证结果：先新增 `src/lib/events/queries.test.ts` 复现查询未取激活落地页的红灯，再修复到绿灯；`bunx vitest run src/lib/events/queries.test.ts` 和 `bun run typecheck` 均通过。
+- 涉及文件：`src/lib/events/queries.ts`、`src/lib/events/queries.test.ts`、`src/app/(app)/page.tsx`、`src/app/(app)/admin/events/page.tsx`
+
+## 2026-05-15 — 多个已保存落地页没有激活入口，首页卡片没有直达激活落地页
+
+- 现象：数据库中已保存多条 `EventLandingPage` 记录，但 `isActive` 全为 `false` 时，后台编辑页没有地方选择激活展示哪个版本；首页赛事列表也只能进入赛事详情或旧按钮入口，不能点击赛事卡片直达激活落地页。
+- 根因：赛事编辑页只根据 `event.landingPage` 判断是否已有落地页，而该字段只映射当前激活版本；没有激活版本时即使数据库已有多个保存版本，UI 也会把它们当作不存在。首页卡片本身也没有根据激活版本切换主链接。
+- 解决方案：编辑页改为读取该赛事全部落地页版本，新增 `EventLandingVersions` 区块展示 version、风格、生成时间和激活状态，并通过服务端表单调用 `activateLandingPage` 后刷新相关路径；首页赛事卡片改为有激活版本时整卡链接到 `/events/[slug]/landing`，否则保持进入赛事详情。
+- 验证结果：先新增首页卡片链接测试和落地页版本列表组件测试确认红灯，再实现修复；`bunx vitest run "src/app/(app)/page.test.tsx" "src/components/events/event-landing-versions.test.tsx" src/lib/ai/queries.test.ts "src/app/(app)/api/admin/events/[id]/landing-pages/route.test.ts"`、`bun run lint`、`bun run typecheck` 均通过。
+- 涉及文件：`src/app/(app)/admin/events/[id]/edit/page.tsx`、`src/app/(app)/page.tsx`、`src/components/events/event-landing-versions.tsx`、`src/app/(app)/page.test.tsx`、`src/components/events/event-landing-versions.test.tsx`、`acceptance/step-9-landing-page-activation-checklist.md`

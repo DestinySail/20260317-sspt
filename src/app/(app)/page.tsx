@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { EventPhaseBadge } from "@/components/events/event-phase-badge";
+import { linkButtonClassName } from "@/lib/button-link";
 import { listPublishedEvents } from "@/lib/events/queries";
 import { formatDateRange } from "@/lib/format";
 
@@ -28,18 +29,25 @@ export default async function Home() {
           />
         ) : (
           <div className="flex flex-col gap-4">
-            {events.map((event) => (
+            {events.map((event) => {
+              const eventHref = event.landingPage
+                ? `/events/${event.slug}/landing`
+                : `/events/${event.slug}`;
+
+              return (
               <Link
                 key={event.id}
-                href={`/events/${event.slug}`}
+                href={eventHref}
                 prefetch={false}
                 className="group flex flex-col gap-4 rounded-md border border-border bg-card p-5 transition-colors hover:bg-card/80 sm:flex-row sm:items-start sm:gap-6 sm:p-6"
               >
                 {/* 左侧：标题 + 描述 + 赛道标签 */}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {event.name}
+                    <h2 className="text-lg font-semibold">
+                      <span className="text-foreground transition-colors group-hover:text-primary">
+                        {event.name}
+                      </span>
                     </h2>
                     <EventPhaseBadge phase={event.phase} />
                   </div>
@@ -79,9 +87,16 @@ export default async function Home() {
                       {formatDateRange(event.startDate, event.endDate)}
                     </span>
                   </div>
+
+                  <div className="flex flex-wrap gap-2 sm:justify-end">
+                    <span className={linkButtonClassName("outline", "sm")}>
+                      {event.landingPage ? "查看落地页" : "查看详情"}
+                    </span>
+                  </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
