@@ -18,18 +18,18 @@ export function MetricCard({
     <div
       className={
         standalone
-          ? "border border-border bg-card p-6"
-          : "border border-border bg-background/60 px-4 py-3"
+          ? "border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-px hover:border-primary/35 hover:shadow-md"
+          : "border border-border bg-background/70 px-4 py-3"
       }
     >
-      <p className="font-[family-name:var(--font-mono-ui-face)] text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="scoreboard-label text-muted-foreground">
         {label}
       </p>
       <p
         className={
           standalone
             ? "mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums [font-family:var(--font-display-face)]"
-            : "mt-1 text-base font-medium text-foreground tabular-nums [font-family:var(--font-display-face)]"
+            : "mt-1 text-base font-semibold text-foreground tabular-nums [font-family:var(--font-display-face)]"
         }
       >
         {value}

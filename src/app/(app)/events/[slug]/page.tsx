@@ -62,8 +62,8 @@ export default async function EventDetailPage({
           </div>
         }
         actions={
-          <div className="w-full border border-border bg-background/75 p-4 lg:min-w-72">
-            <h2 className="text-sm font-semibold">报名状态</h2>
+          <div className="w-full border border-border bg-background/85 p-4 shadow-sm lg:min-w-72">
+            <h2 className="scoreboard-label text-primary">报名状态</h2>
             <p className="mt-2 text-sm leading-7 text-muted-foreground">
               {getRegistrationEntryHint(
                 entryState,
@@ -161,8 +161,8 @@ export default async function EventDetailPage({
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <article className="border border-border bg-card p-6">
-          <h2 className="text-xl font-semibold">赛事时间线</h2>
+        <article className="border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-xl font-semibold [font-family:var(--font-display-face)]">赛事时间线</h2>
           <div className="mt-4 grid gap-3">
             <InfoItem label="赛事时间" value={formatDateRange(event.startDate, event.endDate)} />
             <InfoItem
@@ -180,8 +180,8 @@ export default async function EventDetailPage({
           </div>
         </article>
 
-        <article className="border border-border bg-card p-6">
-          <h2 className="text-xl font-semibold">赛事配置概览</h2>
+        <article className="border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-xl font-semibold [font-family:var(--font-display-face)]">赛事配置概览</h2>
           <div className="mt-4 grid grid-cols-3 gap-4 border border-border bg-background/50 p-4 text-sm">
             <div className="flex flex-col gap-1">
               <span className="font-[family-name:var(--font-mono-ui-face)] text-[11px] uppercase tracking-[0.16em] text-muted-foreground">赛道</span>
@@ -203,8 +203,8 @@ export default async function EventDetailPage({
       </section>
 
       {event.tracks.length > 0 ? (
-        <section className="border border-border bg-card p-6">
-          <h2 className="text-xl font-semibold">赛道</h2>
+        <section className="border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-xl font-semibold [font-family:var(--font-display-face)]">赛道</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {event.tracks.map((track) => (
               <article key={track.name} className="border border-border bg-background/50 p-4">
@@ -219,8 +219,8 @@ export default async function EventDetailPage({
       ) : null}
 
       {event.challenges.length > 0 ? (
-        <section className="border border-border bg-card p-6">
-          <h2 className="text-xl font-semibold">赛题</h2>
+        <section className="border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-xl font-semibold [font-family:var(--font-display-face)]">赛题</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {event.challenges.map((challenge) => (
               <article key={challenge.title} className="border border-border bg-background/50 p-4">
@@ -235,8 +235,8 @@ export default async function EventDetailPage({
       ) : null}
 
       {event.prizes.length > 0 ? (
-        <section className="border border-border bg-card p-6">
-          <h2 className="text-xl font-semibold">奖项设置</h2>
+        <section className="border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-xl font-semibold [font-family:var(--font-display-face)]">奖项设置</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {event.prizes.map((prize) => (
               <article key={prize.title} className="border border-border bg-background/50 p-4">
@@ -255,8 +255,8 @@ export default async function EventDetailPage({
         </section>
       ) : null}
 
-      <section className="border border-border bg-card p-6">
-        <h2 className="text-xl font-semibold">评分维度</h2>
+      <section className="border border-border bg-card p-6 shadow-sm">
+        <h2 className="text-xl font-semibold [font-family:var(--font-display-face)]">评分维度</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {event.scoringCriteria.map((criterion) => (
             <article key={criterion.name} className="border border-border bg-background/50 p-4">
@@ -270,9 +270,9 @@ export default async function EventDetailPage({
       </section>
 
       {rankingData ? (
-        <section className="overflow-hidden border border-border bg-card">
+        <section className="overflow-hidden border border-border bg-card shadow-sm">
           <div className="border-b border-border px-6 py-4">
-            <h2 className="text-xl font-semibold">公开榜单</h2>
+            <h2 className="text-xl font-semibold [font-family:var(--font-display-face)]">公开榜单</h2>
             <p className="mt-2 text-sm leading-7 text-muted-foreground">
               当前榜单基于评委已提交的有效评分汇总而成，按平均加权总分降序展示。
             </p>

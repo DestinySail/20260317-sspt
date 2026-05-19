@@ -51,9 +51,9 @@ export default async function AdminDashboardPage() {
         {checkpoints.map((item) => (
           <article
             key={item.title}
-            className="border border-border bg-card p-5"
+            className="border border-border bg-card p-5 shadow-sm"
           >
-            <h2 className="text-lg font-semibold">{item.title}</h2>
+            <h2 className="text-lg font-semibold [font-family:var(--font-display-face)]">{item.title}</h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {item.description}
             </p>

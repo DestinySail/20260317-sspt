@@ -47,10 +47,10 @@ export default async function AdminEventsPage() {
         <MetricCard label="草稿" value={String(draftCount)} standalone />
       </section>
 
-      <section className="border border-border bg-card">
+      <section className="overflow-hidden border border-border bg-card shadow-sm">
         {events.length === 0 ? (
           <div className="border border-dashed border-border px-6 py-12 text-center">
-            <h2 className="text-lg font-semibold">还没有赛事</h2>
+            <h2 className="text-lg font-semibold [font-family:var(--font-display-face)]">还没有赛事</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               先创建第一个赛事，随后即可在这里发布并同步到前台首页。
             </p>
@@ -63,7 +63,7 @@ export default async function AdminEventsPage() {
             {/* Mobile card list view */}
             <div className="flex flex-col gap-4 p-4 md:hidden">
               {events.map((event) => (
-                <article key={event.id} className="space-y-3 border border-border bg-background p-4">
+                <article key={event.id} className="space-y-3 border border-border bg-background p-4 shadow-sm">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-medium text-foreground">{event.name}</h3>
                     <EventPhaseBadge phase={event.phase} />

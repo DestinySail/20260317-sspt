@@ -29,9 +29,9 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside aria-label="管理后台导航" className="w-full shrink-0 border border-border bg-muted p-4 lg:w-56">
+    <aside aria-label="管理后台导航" className="w-full shrink-0 border border-border bg-card/90 p-4 shadow-sm lg:w-56">
       <div className="mb-3 border-b border-border pb-4">
-        <h2 className="font-[family-name:var(--font-mono-ui-face)] text-xs font-medium tracking-tight">管理后台</h2>
+        <h2 className="text-sm font-semibold tracking-tight text-foreground">管理后台</h2>
         <p className="mt-1 text-xs leading-6 text-muted-foreground">
           赛事管理与运营控制台
         </p>
@@ -49,10 +49,10 @@ export function AdminSidebar() {
               aria-current={isActive ? "page" : undefined}
               prefetchOnIntent={!isActive}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 text-sm transition-colors",
+                "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "border-r-2 border-primary text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}
             >
               <Icon className="size-4" />

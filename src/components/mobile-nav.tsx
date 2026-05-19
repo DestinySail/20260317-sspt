@@ -3,15 +3,17 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { isHeaderNavItemActive, type HeaderNavItem } from "@/components/header-nav";
 import { IntentLink } from "@/components/intent-link";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function MobileNav({
   items,
   userLabel,
   userRole,
 }: {
-  items: { href: string; label: string }[];
+  items: HeaderNavItem[];
   userLabel?: string;
   userRole?: string;
 }) {
@@ -41,7 +43,7 @@ export function MobileNav({
           <div className="absolute right-0 top-full z-50 mt-2 min-w-48 border border-border bg-background/98 px-6 py-4 shadow-lg backdrop-blur">
             <nav aria-label="移动端导航" className="flex flex-col gap-1">
               {items.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = isHeaderNavItemActive(pathname, item.href);
 
                 return (
                   <IntentLink
@@ -49,7 +51,12 @@ export function MobileNav({
                     href={item.href}
                     aria-current={isActive ? "page" : undefined}
                     prefetchOnIntent={!isActive}
-                    className="min-h-11 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    className={cn(
+                      "min-h-11 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
                     onClick={() => setOpen(false)}
                   >
                     {item.label}

@@ -20,16 +20,16 @@ export function PageHeaderCard({
   actions?: ReactNode;
 }) {
   return (
-    <section className="border border-border bg-card p-6 lg:p-8">
+    <section className="border border-border bg-card/95 p-6 shadow-sm lg:p-8">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 space-y-3">
           {tag ? (
-            <p className="inline-block border-b border-primary pb-1 font-[family-name:var(--font-mono-ui-face)] text-[11px] uppercase tracking-[0.1em] text-primary">
+            <p className="scoreboard-label inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-primary">
               {tag}
             </p>
           ) : null}
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
-          <p className="max-w-3xl text-sm leading-7 text-muted-foreground">{description}</p>
+          <h1 className="max-w-4xl text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">{title}</h1>
+          <p className="max-w-3xl text-sm leading-7 text-muted-foreground lg:text-base">{description}</p>
           {extra ? <div className="pt-1">{extra}</div> : null}
         </div>
         {actions ? (

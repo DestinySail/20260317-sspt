@@ -1,12 +1,13 @@
 import { cn } from "@/lib/utils";
 
 const baseClassName =
-  "inline-flex shrink-0 items-center justify-center rounded-md border text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex shrink-0 items-center justify-center rounded-md border text-sm font-semibold whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50";
 
 const variantClassName = {
-  default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/90",
+  default:
+    "border-primary bg-primary text-primary-foreground shadow-sm hover:-translate-y-px hover:bg-primary/90 hover:shadow-md",
   outline:
-    "border-border bg-background hover:bg-muted hover:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+    "border-border bg-card hover:-translate-y-px hover:border-primary/40 hover:bg-secondary hover:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
 };
 
 const sizeClassName = {

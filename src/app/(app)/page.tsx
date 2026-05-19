@@ -11,13 +11,37 @@ export default async function Home() {
   return (
     <div className="flex w-full flex-1 flex-col">
       {/* Hero */}
-      <section className="bg-muted border-b border-border px-6 py-16 text-center lg:px-8 lg:py-20">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground [font-family:var(--font-display-face)] lg:text-4xl">
-          与全球开发者竞逐比分，挑战排名
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-muted-foreground lg:text-base">
-          浏览当前开放中的赛事，查看阶段与时间窗口，报名参赛开启你的挑战之旅。
-        </p>
+      <section className="border-b border-border/80 px-6 py-14 lg:px-8 lg:py-16">
+        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+          <div>
+            <p className="scoreboard-label mb-4 inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-primary">
+              赛事中心
+            </p>
+            <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-foreground [font-family:var(--font-display-face)] lg:text-6xl">
+              与全球开发者竞逐比分，挑战排名
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground">
+              浏览当前开放中的赛事，查看阶段与时间窗口，报名参赛开启你的挑战之旅。
+            </p>
+          </div>
+          <div className="border border-border bg-card/95 p-5 shadow-sm">
+            <p className="text-sm font-medium text-muted-foreground">当前开放</p>
+            <div className="mt-4 grid grid-cols-3 divide-x divide-border rounded-md border border-border bg-secondary/50 text-center">
+              <div className="p-3">
+                <p className="text-2xl font-semibold tabular-nums [font-family:var(--font-display-face)]">{events.length}</p>
+                <p className="mt-1 text-xs text-muted-foreground">开放赛事</p>
+              </div>
+              <div className="p-3">
+                <p className="text-2xl font-semibold text-primary tabular-nums [font-family:var(--font-display-face)]">AI</p>
+                <p className="mt-1 text-xs text-muted-foreground">主题赛道</p>
+              </div>
+              <div className="p-3">
+                <p className="text-2xl font-semibold tabular-nums [font-family:var(--font-display-face)]">Rank</p>
+                <p className="mt-1 text-xs text-muted-foreground">公开榜单</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* 赛事列表 */}
@@ -28,7 +52,7 @@ export default async function Home() {
             description="新的赛事发布后将会展示在这里，敬请关注。"
           />
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="grid gap-4">
             {events.map((event) => {
               const eventHref = event.landingPage
                 ? `/events/${event.slug}/landing`
@@ -39,12 +63,13 @@ export default async function Home() {
                 key={event.id}
                 href={eventHref}
                 prefetch={false}
-                className="group flex flex-col gap-4 rounded-md border border-border bg-card p-5 transition-colors hover:bg-card/80 sm:flex-row sm:items-start sm:gap-6 sm:p-6"
+                className="group flex relative flex-col gap-4 overflow-hidden rounded-md border border-border bg-card p-5 shadow-sm transition-all hover:-translate-y-px hover:border-primary/40 hover:shadow-md sm:flex-row sm:items-start sm:gap-6 sm:p-6"
               >
+                <span className="absolute inset-x-0 top-0 h-px bg-primary/60 transition-colors group-hover:bg-primary" />
                 {/* 左侧：标题 + 描述 + 赛道标签 */}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-lg font-semibold">
+                    <h2 className="text-xl font-semibold tracking-tight [font-family:var(--font-display-face)]">
                       <span className="text-foreground transition-colors group-hover:text-primary">
                         {event.name}
                       </span>
@@ -61,7 +86,7 @@ export default async function Home() {
                       {event.tracks.map((track) => (
                         <span
                           key={track.name}
-                          className="inline-flex items-center bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                          className="inline-flex items-center rounded-full border border-primary/20 bg-primary/8 px-2 py-0.5 text-xs font-medium text-primary"
                         >
                           {track.name}
                         </span>
@@ -74,7 +99,7 @@ export default async function Home() {
                 <div className="flex shrink-0 flex-wrap items-start gap-x-6 gap-y-2 text-sm text-muted-foreground sm:flex-col sm:items-end sm:gap-3">
                   {event.prizes.length > 0 && (
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs">奖励</span>
+                      <span className="text-xs text-muted-foreground">奖励</span>
                       <span className="font-medium text-foreground">
                         {summarizePrizes(event.prizes)}
                       </span>
@@ -82,7 +107,7 @@ export default async function Home() {
                   )}
 
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs">赛期</span>
+                    <span className="text-xs text-muted-foreground">赛期</span>
                     <span className="text-xs tabular-nums text-foreground">
                       {formatDateRange(event.startDate, event.endDate)}
                     </span>

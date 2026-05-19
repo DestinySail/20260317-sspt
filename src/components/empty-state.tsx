@@ -16,8 +16,8 @@ export function EmptyState({
   children?: ReactNode;
 }) {
   return (
-    <div className="border border-dashed border-border bg-card p-8 text-center lg:p-10">
-      <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
+    <div className="border border-dashed border-border bg-card/90 p-8 text-center shadow-sm lg:p-10">
+      <h2 className="text-2xl font-semibold tracking-tight [font-family:var(--font-display-face)]">{title}</h2>
       <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
         {description}
       </p>

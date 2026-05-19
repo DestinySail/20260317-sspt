@@ -1,4 +1,5 @@
 import { signOut } from "@/auth";
+import { HeaderNav, type HeaderNavItem } from "@/components/header-nav";
 import { IntentLink } from "@/components/intent-link";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
@@ -29,9 +30,9 @@ export async function AppHeader() {
     .charAt(0)
     .toUpperCase();
   const linkButtonClassName =
-    "inline-flex h-7 items-center justify-center rounded-md bg-primary px-2.5 text-[0.8rem] font-medium text-primary-foreground transition-colors hover:bg-primary/90";
+    "inline-flex min-h-11 items-center justify-center rounded-md border border-primary bg-primary px-3 text-[0.8rem] font-semibold text-primary-foreground shadow-sm transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md";
 
-  const navItems: { href: string; label: string }[] = [
+  const navItems: HeaderNavItem[] = [
     { href: "/", label: "首页" },
   ];
   if (session?.user) {
@@ -46,43 +47,19 @@ export async function AppHeader() {
   }
 
   return (
-    <header role="banner" aria-label="网站头部" className="sticky top-0 z-40 border-b border-border/80 bg-background/85 backdrop-blur-[12px]">
+    <header role="banner" aria-label="网站头部" className="sticky top-0 z-40 border-b border-border/80 bg-background/85 backdrop-blur-[16px]">
       <div className="flex h-16 w-full items-center justify-between gap-4 px-6 lg:px-8">
         <div className="flex items-center gap-6">
-          <IntentLink href="/" className="leading-none">
-            <span className="font-[family-name:var(--font-mono-ui-face)] text-[13px] font-medium tracking-[-0.01em] text-foreground">
+          <IntentLink href="/" className="group inline-flex items-center gap-3 leading-none">
+            <span className="grid size-7 place-items-center rounded-md bg-primary text-[10px] font-bold text-primary-foreground shadow-sm transition-colors group-hover:bg-primary/90">
+              AI
+            </span>
+            <span className="text-sm font-semibold tracking-tight text-foreground">
               AI 赛事业务管理平台
             </span>
           </IntentLink>
 
-          <nav aria-label="主导航" className="hidden items-center gap-4 font-[family-name:var(--font-mono-ui-face)] text-[13px] text-muted-foreground md:flex">
-            <IntentLink href="/" className="transition-colors hover:text-foreground">
-              首页
-            </IntentLink>
-            {session?.user ? (
-              <>
-                <IntentLink href="/my/registrations" className="transition-colors hover:text-foreground">
-                  我的报名
-                </IntentLink>
-                <IntentLink href="/my/projects" className="transition-colors hover:text-foreground">
-                  我的作品
-                </IntentLink>
-                {showJudgeCenter ? (
-                  <IntentLink href="/judge" className="transition-colors hover:text-foreground">
-                    评审中心
-                  </IntentLink>
-                ) : null}
-              </>
-            ) : null}
-            {session?.user?.role === "ADMIN" ? (
-              <IntentLink
-                href="/admin"
-                className="transition-colors hover:text-foreground"
-              >
-                管理后台
-              </IntentLink>
-            ) : null}
-          </nav>
+          <HeaderNav items={navItems} />
         </div>
 
         <div className="flex items-center gap-3">
@@ -93,8 +70,8 @@ export async function AppHeader() {
           />
           {session?.user ? (
             <>
-              <div className="hidden items-center gap-2.5 rounded-full border border-border/60 bg-card py-1 pl-1 pr-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)] md:flex">
-                <div className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+              <div className="hidden items-center gap-2.5 rounded-full border border-border bg-card/90 py-1 pl-1 pr-3 shadow-sm md:flex">
+                <div className="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                   {initials}
                 </div>
                 <div className="text-sm leading-tight">
