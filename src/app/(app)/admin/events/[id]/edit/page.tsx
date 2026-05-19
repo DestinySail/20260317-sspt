@@ -130,6 +130,7 @@ export default async function AdminEditEventPage({
       />
 
       <EventLandingVersions
+        eventId={event.id}
         eventSlug={event.slug}
         landingPages={landingPages}
         activateAction={activateLandingAction}

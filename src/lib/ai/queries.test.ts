@@ -124,6 +124,46 @@ describe("getEventLandingPages", () => {
   });
 });
 
+describe("getEventLandingPageById", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("loads the selected landing page with its owning event for version preview validation", async () => {
+    const landingPageId = "lp-2";
+    mockPrismaClient.eventLandingPage.findUnique.mockResolvedValueOnce({
+      id: landingPageId,
+      eventId: "event-123",
+      version: 2,
+      isActive: false,
+      content: "<html>v2</html>",
+      event: {
+        id: "event-123",
+        name: "AI Hackathon",
+        slug: "ai-hackathon",
+      },
+    });
+
+    const { getEventLandingPageById } = await import("@/lib/ai/queries");
+    const result = await getEventLandingPageById(landingPageId);
+
+    expect(mockPrismaClient.eventLandingPage.findUnique).toHaveBeenCalledWith({
+      where: { id: landingPageId },
+      include: {
+        event: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+    expect(result?.content).toContain("v2");
+    expect(result?.event.id).toBe("event-123");
+  });
+});
+
 describe("activateLandingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();

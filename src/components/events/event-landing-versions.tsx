@@ -14,12 +14,14 @@ export type EventLandingVersion = {
 };
 
 type EventLandingVersionsProps = {
+  eventId: string;
   eventSlug: string;
   landingPages: EventLandingVersion[];
   activateAction: (formData: FormData) => void | Promise<void>;
 };
 
 export function EventLandingVersions({
+  eventId,
   eventSlug,
   landingPages,
   activateAction,
@@ -80,7 +82,7 @@ export function EventLandingVersions({
 
               <div className="flex flex-wrap gap-2 md:justify-end">
                 <Link
-                  href={`/events/${eventSlug}/landing`}
+                  href={`/admin/events/${eventId}/landing-preview?landingPageId=${landingPage.id}`}
                   target="_blank"
                   rel="noreferrer"
                   className={linkButtonClassName("outline", "sm")}

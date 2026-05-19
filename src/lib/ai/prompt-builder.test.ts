@@ -54,6 +54,15 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain("响应式");
   });
 
+  it("包含 web-design-engineer 工作流约束", () => {
+    const prompt = buildSystemPrompt("skill");
+    expect(prompt).toContain("Web Design Engineer");
+    expect(prompt).toContain("stunning");
+    expect(prompt).toContain("四个定位问题");
+    expect(prompt).toContain("视觉层级");
+    expect(prompt).toContain("不要把 ```html");
+  });
+
   it("包含报名链接格式", () => {
     const prompt = buildSystemPrompt("skill");
     expect(prompt).toContain("/events/{slug}/register");

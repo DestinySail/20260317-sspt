@@ -1,5 +1,6 @@
 import { getAIConfig } from "./config";
 import { buildPrompts, type EventData } from "./prompt-builder";
+import { findHtmlStart, stripHtmlCodeFence } from "./html-sanitize";
 import { formatSSE, parseOpenAIChunk, parseAnthropicChunk } from "./sse-stream";
 
 export type { EventData };
@@ -108,20 +109,6 @@ export function generateLandingPageStream(
         let inCodePhase = false;
         let thinkingBuffer = "";
 
-        // 代码开始标记检测
-        const CODE_START_PATTERNS = [
-          /```html/i,
-          /<!DOCTYPE/i,
-          /<html/i,
-        ];
-
-        const detectCodeStart = (text: string) => {
-          for (const pattern of CODE_START_PATTERNS) {
-            if (pattern.test(text)) return true;
-          }
-          return false;
-        };
-
         const flushThinking = () => {
           if (thinkingBuffer.length > 0) {
             write({ type: "thinking", chunk: thinkingBuffer });
@@ -147,7 +134,7 @@ export function generateLandingPageStream(
                 if (!inCodePhase && thinkingBuffer.length > 0) {
                   flushThinking();
                 }
-                write({ type: "done", html: fullHtml });
+                write({ type: "done", html: stripHtmlCodeFence(fullHtml) });
                 controller.close();
                 return;
               }
@@ -155,28 +142,20 @@ export function generateLandingPageStream(
                 if (!inCodePhase) {
                   // 检查是否进入 code 阶段
                   const textToCheck = thinkingBuffer + result;
-                  if (detectCodeStart(textToCheck)) {
-                    // 找出代码标记的位置
-                    let markerMatch: RegExpMatchArray | null = null;
-                    for (const pattern of CODE_START_PATTERNS) {
-                      markerMatch = textToCheck.match(pattern);
-                      if (markerMatch) break;
+                  const htmlStart = findHtmlStart(textToCheck);
+                  if (htmlStart) {
+                    const thinkingPart = textToCheck.slice(0, htmlStart.index);
+                    if (thinkingPart.length > 0) {
+                      write({ type: "thinking", chunk: thinkingPart });
                     }
-                    if (markerMatch) {
-                      const markerPos = markerMatch.index!;
-                      const thinkingPart = textToCheck.slice(0, markerPos);
-                      if (thinkingPart.length > 0) {
-                        write({ type: "thinking", chunk: thinkingPart });
-                      }
-                      inCodePhase = true;
-                      write({ type: "phase", phase: "code" });
-                      const codePart = textToCheck.slice(markerPos);
-                      if (codePart.length > 0) {
-                        fullHtml += codePart;
-                        write({ type: "code", chunk: codePart });
-                      }
-                      thinkingBuffer = "";
+                    inCodePhase = true;
+                    write({ type: "phase", phase: "code" });
+                    const codePart = textToCheck.slice(htmlStart.contentStart);
+                    if (codePart.length > 0) {
+                      fullHtml += codePart;
+                      write({ type: "code", chunk: codePart });
                     }
+                    thinkingBuffer = "";
                   } else {
                     // 还在 thinking 阶段
                     thinkingBuffer += result;
@@ -194,7 +173,7 @@ export function generateLandingPageStream(
           if (!inCodePhase && thinkingBuffer.length > 0) {
             flushThinking();
           }
-          write({ type: "done", html: fullHtml });
+          write({ type: "done", html: stripHtmlCodeFence(fullHtml) });
           controller.close();
         } catch (readError) {
           const msg =

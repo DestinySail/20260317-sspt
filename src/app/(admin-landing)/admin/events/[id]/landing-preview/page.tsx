@@ -1,16 +1,24 @@
 import { notFound } from "next/navigation";
-import { getEventLandingPageByEventId } from "@/lib/ai/queries";
+import {
+  getEventLandingPageByEventId,
+  getEventLandingPageById,
+} from "@/lib/ai/queries";
 
 export default async function AdminLandingPreviewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ landingPageId?: string }>;
 }) {
   const { id } = await params;
+  const { landingPageId } = await searchParams;
 
-  const landingPage = await getEventLandingPageByEventId(id);
+  const landingPage = landingPageId
+    ? await getEventLandingPageById(landingPageId)
+    : await getEventLandingPageByEventId(id);
 
-  if (!landingPage) {
+  if (!landingPage || landingPage.event.id !== id) {
     notFound();
   }
 

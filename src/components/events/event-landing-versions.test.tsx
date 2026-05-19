@@ -6,6 +6,7 @@ describe("EventLandingVersions", () => {
   it("shows saved landing page versions and an activation control for inactive versions", () => {
     const html = renderToStaticMarkup(
       <EventLandingVersions
+        eventId="event-1"
         eventSlug="ai-hackathon"
         landingPages={[
           {
@@ -36,5 +37,11 @@ describe("EventLandingVersions", () => {
     expect(html).toContain('name="landingPageId"');
     expect(html).toContain('value="landing-2"');
     expect(html).toContain("激活");
+    expect(html).toContain(
+      'href="/admin/events/event-1/landing-preview?landingPageId=landing-2"'
+    );
+    expect(html).toContain(
+      'href="/admin/events/event-1/landing-preview?landingPageId=landing-1"'
+    );
   });
 });

@@ -6,8 +6,11 @@ import { useRouter } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  CODE_PANEL_CLASS_NAME,
+  CODE_SCROLL_CLASS_NAME,
   COMPLETED_GENERATION_ACTIONS,
   CODE_VIEW_MASK_IMAGE,
+  GENERATING_PAGE_CLASS_NAME,
   THINKING_PANEL_CLASS_NAME,
 } from "@/components/events/generating-page-layout";
 
@@ -52,11 +55,45 @@ export function GeneratingPageContent({
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [completedVersion, setCompletedVersion] = useState<number | null>(null);
   const codeRef = useRef("");
+  const displayedCodeRef = useRef("");
+  const pendingCodeRef = useRef("");
   const fullHtmlRef = useRef("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const typewriterFrameRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const thinkingEndRef = useRef<number>(0);
   const codeScrollRef = useRef<HTMLDivElement>(null);
+
+  const flushPendingCode = useCallback(() => {
+    if (typewriterFrameRef.current !== null) return;
+
+    const tick = () => {
+      const pending = pendingCodeRef.current;
+      if (pending.length === 0) {
+        typewriterFrameRef.current = null;
+        return;
+      }
+
+      const nextChunkSize = Math.min(
+        Math.max(8, Math.ceil(pending.length / 8)),
+        96
+      );
+      const nextChunk = pending.slice(0, nextChunkSize);
+      pendingCodeRef.current = pending.slice(nextChunkSize);
+      displayedCodeRef.current += nextChunk;
+      setCodeContent(displayedCodeRef.current);
+      typewriterFrameRef.current = requestAnimationFrame(tick);
+    };
+
+    typewriterFrameRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  const cancelTypewriter = useCallback(() => {
+    if (typewriterFrameRef.current !== null) {
+      cancelAnimationFrame(typewriterFrameRef.current);
+      typewriterFrameRef.current = null;
+    }
+  }, []);
 
   const startTimer = useCallback(() => {
     startTimeRef.current = Date.now();
@@ -77,13 +114,16 @@ export function GeneratingPageContent({
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      cancelTypewriter();
     };
-  }, []);
+  }, [cancelTypewriter]);
 
   const handleGenerate = useCallback(async () => {
     setStatus("connecting");
     setError(null);
     codeRef.current = "";
+    displayedCodeRef.current = "";
+    pendingCodeRef.current = "";
     fullHtmlRef.current = "";
     setThinkingChunks([]);
     setCodeContent("");
@@ -163,7 +203,8 @@ export function GeneratingPageContent({
             try {
               const parsed = JSON.parse(eventData);
               codeRef.current += parsed.chunk;
-              setCodeContent(codeRef.current);
+              pendingCodeRef.current += parsed.chunk;
+              flushPendingCode();
             } catch {
               // ignore
             }
@@ -204,7 +245,15 @@ export function GeneratingPageContent({
       setError(err instanceof Error ? err.message : "生成失败，请重试");
       stopTimer();
     }
-  }, [eventId, selectedHint, customHint, status, startTimer, stopTimer]);
+  }, [
+    eventId,
+    selectedHint,
+    customHint,
+    status,
+    startTimer,
+    stopTimer,
+    flushPendingCode,
+  ]);
 
   useEffect(() => {
     if (initialStyleHint && status === "connecting") {
@@ -278,17 +327,20 @@ export function GeneratingPageContent({
   const handleDiscard = () => {
     setStatus("idle");
     codeRef.current = "";
+    displayedCodeRef.current = "";
+    pendingCodeRef.current = "";
     fullHtmlRef.current = "";
     setThinkingChunks([]);
     setCodeContent("");
     setError(null);
+    cancelTypewriter();
     stopTimer();
   };
 
   const showTimer = status !== "idle" && status !== "error";
 
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col">
+    <div className={GENERATING_PAGE_CLASS_NAME}>
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border bg-muted px-4 py-2">
         <div className="flex items-center gap-3">
@@ -441,14 +493,14 @@ export function GeneratingPageContent({
 
         {/* Code phase - typewriter with edge blur */}
         {(status === "thinking" || status === "code" || status === "completed") && (
-          <div className="relative flex flex-1 flex-col overflow-hidden">
+          <div className={CODE_PANEL_CLASS_NAME}>
             {/* Edge gradient for immersion */}
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-gradient-to-b from-background to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-[#111111] to-transparent" />
 
             {/* Code display with mask */}
             <div
               ref={codeScrollRef}
-              className="flex-1 overflow-auto p-4 font-mono text-sm leading-6"
+              className={CODE_SCROLL_CLASS_NAME}
               style={{
                 maskImage: CODE_VIEW_MASK_IMAGE,
                 WebkitMaskImage: CODE_VIEW_MASK_IMAGE,
@@ -463,7 +515,7 @@ export function GeneratingPageContent({
                 </div>
               )}
               {(status === "code" || status === "completed") && codeContent && (
-                <pre className="whitespace-pre-wrap break-all text-[#d4d4d4]">{codeContent}</pre>
+                <pre className="whitespace-pre-wrap break-all text-[#e6e6e6]">{codeContent}</pre>
               )}
               {status === "code" && !codeContent && (
                 <div className="flex h-full items-center justify-center">

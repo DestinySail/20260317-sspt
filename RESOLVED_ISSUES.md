@@ -177,3 +177,27 @@
 - 解决方案：编辑页改为读取该赛事全部落地页版本，新增 `EventLandingVersions` 区块展示 version、风格、生成时间和激活状态，并通过服务端表单调用 `activateLandingPage` 后刷新相关路径；首页赛事卡片改为有激活版本时整卡链接到 `/events/[slug]/landing`，否则保持进入赛事详情。
 - 验证结果：先新增首页卡片链接测试和落地页版本列表组件测试确认红灯，再实现修复；`bunx vitest run "src/app/(app)/page.test.tsx" "src/components/events/event-landing-versions.test.tsx" src/lib/ai/queries.test.ts "src/app/(app)/api/admin/events/[id]/landing-pages/route.test.ts"`、`bun run lint`、`bun run typecheck` 均通过。
 - 涉及文件：`src/app/(app)/admin/events/[id]/edit/page.tsx`、`src/app/(app)/page.tsx`、`src/components/events/event-landing-versions.tsx`、`src/app/(app)/page.test.tsx`、`src/components/events/event-landing-versions.test.tsx`、`acceptance/step-9-landing-page-activation-checklist.md`
+
+## 2026-05-19 — 生成落地页左上角显示 ```html 字符串
+
+- 现象：查看 AI 生成的赛事落地页时，页面左上角会出现 Markdown 代码块标记 ` ```html`，影响前台展示。
+- 根因：`src/lib/ai/code-generator.ts` 在流式解析 AI 响应时把 ` ```html` 识别为代码阶段起点，但随后用 `textToCheck.slice(markerPos)` 把代码围栏本身也追加进 `fullHtml`；保存后的 `EventLandingPage.content` 因此包含非 HTML 文本，iframe `srcDoc` 会把它渲染到页面左上角。
+- 解决方案：新增 `src/lib/ai/html-sanitize.ts`，将代码阶段起点拆成“边界位置”和“HTML 内容起点”，遇到 ` ```html` 时从围栏之后开始收集 HTML；发送 `done` 事件前统一剥离开头/结尾 Markdown 代码围栏。同时将 AI 生成提示词调整为遵循 Web Design Engineer 工作流，强调视觉方向、设计系统、自检和最终可保存内容不得包含代码围栏。
+- 验证结果：新增回归断言覆盖 ` ```html` 起始围栏和结尾 ` ``` ` 剥离；`bunx vitest run src/lib/ai/code-generator.test.ts src/lib/ai/prompt-builder.test.ts` 通过（2 个测试文件，20 个用例）。
+- 涉及文件：`src/lib/ai/html-sanitize.ts`、`src/lib/ai/code-generator.ts`、`src/lib/ai/prompt-builder.ts`、`src/lib/ai/code-generator.test.ts`、`src/lib/ai/prompt-builder.test.ts`、`acceptance/step-9-landing-page-activation-checklist.md`
+
+## 2026-05-19 — 落地页生成过程代码区撑出页面滚动且显示发白、输出跳段
+
+- 现象：后台生成赛事落地页时，代码块内容过长会让浏览器页面本身出现上下滚动条；代码区大面积透明发白导致内容看不清；代码展示按 SSE 网络 chunk 一段一段跳出，不够流畅。
+- 根因：`GeneratingPageContent` 根容器使用 `h-[calc(100vh-64px)]`，但该页面实际嵌套在带 `py-8` 的 admin layout 内，生成页高度加外层 padding 会超过视口；代码区同时使用顶部渐变层和 mask，视觉上把整块内容洗浅；前端收到 `code` 事件后直接把完整 chunk 拼进 React state，展示节奏取决于网络包大小。
+- 解决方案：抽取生成页布局常量，根容器改为 `h-[calc(100dvh-8rem)] min-h-0 overflow-hidden`，让代码区内部滚动；代码 panel 与滚动层改为不透明深色底，只保留顶部渐隐 mask；新增 `pendingCodeRef` / `displayedCodeRef` / `requestAnimationFrame` 打字机缓冲，让收到的代码按帧逐步展示。
+- 验证结果：新增布局约束回归断言覆盖视口高度、内部滚动、不透明代码底和仅顶部渐隐；`bunx vitest run src/components/events/generating-page-content.test.tsx` 通过（26 个用例），`bun run typecheck`、`bun run lint` 通过。尝试用本地浏览器打开 `http://localhost:3000/admin/events` 时被当前未登录会话重定向到 Auth.js 登录页，因此未完成后台生成页截图验收。
+- 涉及文件：`src/components/events/generating-page-content.tsx`、`src/components/events/generating-page-layout.ts`、`src/components/events/generating-page-content.test.tsx`、`acceptance/step-9-landing-page-activation-checklist.md`
+
+## 2026-05-19 — 后台落地页版本列表查看任意版本都显示当前激活版本
+
+- 现象：在管理后台赛事编辑页的落地页版本列表中，点击不同版本的“查看”，打开后看到的都是当前激活落地页，无法检查对应历史版本内容。
+- 根因：`EventLandingVersions` 每行“查看”都链接到公开前台路由 `/events/[slug]/landing`；该路由按设计只读取 `isActive=true` 的当前激活版本，没有携带或使用具体 `EventLandingPage.id`。
+- 解决方案：后台预览页 `/admin/events/[id]/landing-preview` 增加 `landingPageId` 查询参数支持；传入时用 `getEventLandingPageById()` 读取指定版本，并校验该版本的 `event.id` 与路由赛事 ID 一致；版本列表每行“查看”改为链接到 `/admin/events/[eventId]/landing-preview?landingPageId=[landingPageId]`。不带参数的顶部“查看落地页”仍保持预览当前激活版本。
+- 验证结果：新增/更新组件与查询测试，覆盖每个版本生成独立预览链接以及按 ID 加载版本时包含所属赛事；`bunx vitest run src/components/events/event-landing-versions.test.tsx src/lib/ai/queries.test.ts` 通过（2 个测试文件，10 个用例），`bun run typecheck`、`bun run lint` 通过。
+- 涉及文件：`src/components/events/event-landing-versions.tsx`、`src/components/events/event-landing-versions.test.tsx`、`src/app/(admin-landing)/admin/events/[id]/landing-preview/page.tsx`、`src/app/(app)/admin/events/[id]/edit/page.tsx`、`src/lib/ai/queries.ts`、`src/lib/ai/queries.test.ts`、`acceptance/step-9-landing-page-activation-checklist.md`

@@ -4,6 +4,15 @@ export async function getEventLandingPageById(id: string) {
   const prisma = getPrismaClient();
   return prisma.eventLandingPage.findUnique({
     where: { id },
+    include: {
+      event: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
   });
 }
 

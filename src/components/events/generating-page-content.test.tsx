@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  CODE_PANEL_CLASS_NAME,
+  CODE_SCROLL_CLASS_NAME,
   COMPLETED_GENERATION_ACTIONS,
   CODE_VIEW_MASK_IMAGE,
+  GENERATING_PAGE_CLASS_NAME,
   THINKING_PANEL_CLASS_NAME,
 } from "@/components/events/generating-page-layout";
 
@@ -174,7 +177,7 @@ describe("STYLE_HINTS constant", () => {
 describe("edge gradient CSS logic", () => {
   it("only fades generated code near the top edge", () => {
     expect(CODE_VIEW_MASK_IMAGE).toBe(
-      "linear-gradient(transparent 0%, black 8%, black 100%)"
+      "linear-gradient(transparent 0%, black 4%, black 100%)"
     );
     expect(CODE_VIEW_MASK_IMAGE).not.toContain("transparent 100%");
   });
@@ -182,6 +185,20 @@ describe("edge gradient CSS logic", () => {
   it("keeps the thinking panel sized to content instead of filling the page", () => {
     expect(THINKING_PANEL_CLASS_NAME).toContain("flex-none");
     expect(THINKING_PANEL_CLASS_NAME).not.toContain("flex-1");
+  });
+});
+
+describe("generating page layout constraints", () => {
+  it("keeps the generating page inside the viewport instead of creating page scroll", () => {
+    expect(GENERATING_PAGE_CLASS_NAME).toContain("h-[calc(100dvh-8rem)]");
+    expect(GENERATING_PAGE_CLASS_NAME).toContain("overflow-hidden");
+    expect(GENERATING_PAGE_CLASS_NAME).toContain("min-h-0");
+  });
+
+  it("uses an opaque code surface with internal scrolling", () => {
+    expect(CODE_PANEL_CLASS_NAME).toContain("bg-[#111111]");
+    expect(CODE_SCROLL_CLASS_NAME).toContain("bg-[#111111]");
+    expect(CODE_SCROLL_CLASS_NAME).toContain("overflow-auto");
   });
 });
 
